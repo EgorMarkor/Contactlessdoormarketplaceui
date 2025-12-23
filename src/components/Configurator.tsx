@@ -190,7 +190,7 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
   };
 
   return (
-    <div className="min-h-screen bg-background py-6 sm:py-8 lg:py-12">
+    <div className="min-h-screen bg-background py-6 sm:py-8 lg:py-12 pb-24 lg:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-foreground mb-2">Конфигуратор дверей</h1>
@@ -206,7 +206,7 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
               layout
               className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-border"
             >
-              <div className="aspect-[3/4] bg-gradient-to-br from-secondary via-secondary/50 to-secondary/30 relative overflow-hidden">
+              <div className="aspect-[3/4] sm:aspect-[3/4] bg-gradient-to-br from-secondary via-secondary/50 to-secondary/30 relative overflow-hidden">
                 <motion.img
                   key={currentDoor.id + state.color}
                   initial={{ opacity: 0 }}
@@ -218,21 +218,22 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
                 />
                 
                 {/* Configuration overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
                     <h2 className="text-white mb-2 text-base sm:text-lg">{currentDoor.name}</h2>
-                    <div className="space-y-1 text-xs sm:text-sm">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:text-sm">
                       <p>Цвет: {state.color}</p>
                       <p>Кромка: {state.edge}</p>
                       <p>Ручка: {state.handle}</p>
                       <p>Стекло: {state.glass}</p>
-                      <p>Коробка: {state.frameType}</p>
+                      <p className="col-span-2">Коробка: {state.frameType}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 sm:p-6 border-t border-border">
+              {/* Desktop buttons */}
+              <div className="hidden lg:block p-4 sm:p-6 border-t border-border">
                 <div className="flex items-baseline justify-between mb-4 sm:mb-6">
                   <div>
                     <div className="text-xs sm:text-sm text-muted-foreground mb-1">Стоимость:</div>
@@ -258,8 +259,7 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
                     className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-card border-2 border-border text-foreground rounded-2xl sm:rounded-3xl hover:border-accent/30 hover:bg-secondary/50 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">Где посмотреть образцы</span>
-                    <span className="sm:hidden">Образцы</span>
+                    <span>Где посмотреть образцы</span>
                   </button>
                 </div>
               </div>
@@ -279,7 +279,7 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
                       setState({ ...state, doorModel: door });
                     }
                   }}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-border rounded-2xl text-foreground focus:outline-none focus:border-accent bg-background text-sm"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-border rounded-2xl text-foreground focus:outline-none focus:border-accent bg-background text-sm"
                 >
                   {doorModels.map(door => (
                     <option key={door.id} value={door.id}>
@@ -290,21 +290,20 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
               </div>
 
               {/* Tabs */}
-              <div className="border-b border-border mb-4 sm:mb-6">
-                <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+              <div className="border-b border-border mb-4 sm:mb-6 -mx-4 sm:mx-0 px-4 sm:px-0">
+                <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
                   {tabs.map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-2xl whitespace-nowrap transition-all text-xs sm:text-sm ${
+                      className={`flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-2xl whitespace-nowrap transition-all text-xs sm:text-sm flex-shrink-0 snap-start ${
                         activeTab === tab.id
                           ? 'bg-accent text-accent-foreground shadow-sm'
                           : 'text-muted-foreground hover:bg-secondary'
                       }`}
                     >
-                      <tab.icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="hidden xs:inline">{tab.label}</span>
-                      <span className="xs:hidden">{tab.label.split(' ')[0]}</span>
+                      <tab.icon className="w-4 h-4 sm:w-4 sm:h-4" />
+                      <span className="text-xs sm:text-sm">{tab.label}</span>
                     </button>
                   ))}
                 </div>
@@ -335,6 +334,38 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
                 <span>Найти ближайшую стойку →</span>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-2xl z-40 safe-area-bottom">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-xs text-muted-foreground">Итого:</div>
+              <div className="text-foreground text-lg">{totalPrice.toLocaleString('ru-RU')} ₽</div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-muted-foreground">Базовая:</div>
+              <div className="text-xs text-muted-foreground line-through">{currentDoor.basePrice.toLocaleString('ru-RU')} ₽</div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onNavigate('stands')}
+              className="flex-shrink-0 px-4 py-3 bg-secondary border border-border text-foreground rounded-2xl hover:bg-secondary/80 transition-all flex items-center justify-center gap-2"
+              aria-label="Образцы"
+            >
+              <MapPin className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onNavigate('checkout')}
+              className="flex-1 px-4 py-3 bg-accent text-accent-foreground rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-2 shadow-lg text-sm font-medium"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span>Оформить заказ</span>
+            </button>
           </div>
         </div>
       </div>
