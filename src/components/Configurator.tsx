@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { MapPin, ShoppingCart, Palette, Frame, Hand, Square, Box } from 'lucide-react';
+import { MapPin, ShoppingCart, Palette, Frame, Hand, Square, Box, Plus } from 'lucide-react';
 import { doorModels, colorOptions, edgeOptions, handleOptions, glassOptions, frameOptions } from '../data/doors';
-import type { ConfiguratorState, DoorModel } from '../App';
+import type { ConfiguratorState, DoorModel, CartItem } from '../App';
 
 interface ConfiguratorProps {
   state: ConfiguratorState;
   setState: (state: ConfiguratorState) => void;
   onNavigate: (page: string, door?: DoorModel) => void;
+  addToCart: (item: Omit<CartItem, 'id'>) => void;
 }
 
-export function Configurator({ state, setState, onNavigate }: ConfiguratorProps) {
+export function Configurator({ state, setState, onNavigate, addToCart }: ConfiguratorProps) {
   const [activeTab, setActiveTab] = useState<'color' | 'edge' | 'handle' | 'glass' | 'frame'>('color');
 
   const currentDoor = state.doorModel || doorModels[0];
@@ -247,11 +248,19 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
 
                 <div className="space-y-2 sm:space-y-3">
                   <button
-                    onClick={() => onNavigate('checkout')}
-                    className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-accent text-accent-foreground rounded-2xl sm:rounded-3xl hover:bg-accent/90 transition-all flex items-center justify-center gap-2 group shadow-lg hover:shadow-xl text-sm sm:text-base"
+                    onClick={() => {
+                      addToCart({
+                        doorModel: currentDoor,
+                        configuration: state,
+                        quantity: 1,
+                        price: totalPrice
+                      });
+                      onNavigate('cart');
+                    }}
+                    className="flex-1 px-4 py-3 bg-accent text-accent-foreground rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-2 shadow-lg text-sm font-medium"
                   >
-                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span>Оформить заказ</span>
+                    <Plus className="w-4 h-4" />
+                    <span>Добавить в корзину</span>
                   </button>
                   
                   <button
@@ -360,11 +369,11 @@ export function Configurator({ state, setState, onNavigate }: ConfiguratorProps)
               <MapPin className="w-4 h-4" />
             </button>
             <button
-              onClick={() => onNavigate('checkout')}
+              onClick={() => addToCart({ doorModel: currentDoor, color: state.color, edge: state.edge, handle: state.handle, glass: state.glass, frameType: state.frameType })}
               className="flex-1 px-4 py-3 bg-accent text-accent-foreground rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-2 shadow-lg text-sm font-medium"
             >
-              <ShoppingCart className="w-4 h-4" />
-              <span>Оформить заказ</span>
+              <Plus className="w-4 h-4" />
+              <span>Добавить в корзину</span>
             </button>
           </div>
         </div>

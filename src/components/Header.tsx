@@ -1,12 +1,13 @@
-import { Menu, X, Phone, Mail } from 'lucide-react';
+import { Menu, X, Phone, Mail, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 
 interface HeaderProps {
   currentPage: string;
   onNavigate: (page: any) => void;
+  cartItemsCount: number;
 }
 
-export function Header({ currentPage, onNavigate }: HeaderProps) {
+export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -72,6 +73,20 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Cart Button */}
+            <button
+              onClick={() => onNavigate('cart')}
+              className="relative p-2 text-muted-foreground hover:text-accent rounded-xl hover:bg-secondary transition-colors"
+              aria-label="Корзина"
+            >
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-accent-foreground text-xs rounded-full flex items-center justify-center font-medium shadow-md">
+                  {cartItemsCount > 9 ? '9+' : cartItemsCount}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => onNavigate('configurator')}
               className="hidden md:flex px-4 lg:px-6 py-2 sm:py-2.5 bg-accent text-accent-foreground rounded-2xl hover:bg-accent/90 transition-all shadow-md hover:shadow-lg text-sm whitespace-nowrap"
