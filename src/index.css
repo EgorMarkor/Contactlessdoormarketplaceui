@@ -770,6 +770,10 @@
     width: calc(var(--spacing) * 20);
   }
 
+  .w-auto {
+    width: auto;
+  }
+
   .w-full {
     width: 100%;
   }
@@ -1024,8 +1028,28 @@
     }
   }
 
+  .border-accent\/30 {
+    border-color: var(--accent);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-accent\/30 {
+      border-color: color-mix(in oklab, var(--accent) 30%, transparent);
+    }
+  }
+
   .border-border {
     border-color: var(--border);
+  }
+
+  .border-border\/20 {
+    border-color: var(--border);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-border\/20 {
+      border-color: color-mix(in oklab, var(--border) 20%, transparent);
+    }
   }
 
   .border-neutral-200 {
@@ -1054,6 +1078,10 @@
     }
   }
 
+  .bg-\[\#15181C\] {
+    background-color: #15181c;
+  }
+
   .bg-accent {
     background-color: var(--accent);
   }
@@ -1075,6 +1103,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .bg-accent\/10 {
       background-color: color-mix(in oklab, var(--accent) 10%, transparent);
+    }
+  }
+
+  .bg-accent\/20 {
+    background-color: var(--accent);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-accent\/20 {
+      background-color: color-mix(in oklab, var(--accent) 20%, transparent);
     }
   }
 
@@ -1293,6 +1331,10 @@
 
   .fill-accent {
     fill: var(--accent);
+  }
+
+  .object-contain {
+    object-fit: contain;
   }
 
   .object-cover {
@@ -1523,6 +1565,16 @@
     color: var(--color-white);
   }
 
+  .text-white\/60 {
+    color: #fff9;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .text-white\/60 {
+      color: color-mix(in oklab, var(--color-white) 60%, transparent);
+    }
+  }
+
   .line-through {
     text-decoration-line: line-through;
   }
@@ -1748,6 +1800,18 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-white\/5:hover {
+      background-color: #ffffff0d;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-white\/5:hover {
+        background-color: color-mix(in oklab, var(--color-white) 5%, transparent);
+      }
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:text-accent:hover {
       color: var(--accent);
     }
@@ -1780,6 +1844,12 @@
   @media (hover: hover) {
     .hover\:text-foreground:hover {
       color: var(--foreground);
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:text-white:hover {
+      color: var(--color-white);
     }
   }
 
@@ -2524,80 +2594,80 @@
 
 :root {
   --font-size: 16px;
-  --background: #faf7f4;
-  --foreground: #3d2817;
+  --background: #fff;
+  --foreground: #15181c;
   --card: #fff;
-  --card-foreground: #3d2817;
+  --card-foreground: #15181c;
   --popover: #fff;
-  --popover-foreground: #3d2817;
-  --primary: #3d2817;
-  --primary-foreground: #faf7f4;
-  --secondary: #f5ede6;
-  --secondary-foreground: #3d2817;
-  --muted: #e8ddd3;
-  --muted-foreground: #7a6550;
-  --accent: #d4a853;
-  --accent-foreground: #3d2817;
+  --popover-foreground: #15181c;
+  --primary: #15181c;
+  --primary-foreground: #fff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #15181c;
+  --muted: #e8e8e8;
+  --muted-foreground: #7b7e8b;
+  --accent: #f7ab23;
+  --accent-foreground: #15181c;
   --destructive: #c94141;
   --destructive-foreground: #fff;
-  --border: #3d28171a;
+  --border: #15181c1a;
   --input: transparent;
-  --input-background: #f5ede6;
-  --switch-background: #d4c3b5;
+  --input-background: #f5f5f5;
+  --switch-background: #d1d1d1;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #d4a853;
-  --chart-1: #d4a853;
-  --chart-2: #8b6f5c;
-  --chart-3: #e8c589;
-  --chart-4: #a68b6c;
-  --chart-5: #f0d9a8;
+  --ring: #f7ab23;
+  --chart-1: #f7ab23;
+  --chart-2: #7b7e8b;
+  --chart-3: #ffc04d;
+  --chart-4: #a5a8b2;
+  --chart-5: #ffd580;
   --radius: 1.25rem;
-  --sidebar: #f5ede6;
-  --sidebar-foreground: #3d2817;
-  --sidebar-primary: #3d2817;
-  --sidebar-primary-foreground: #faf7f4;
-  --sidebar-accent: #e8ddd3;
-  --sidebar-accent-foreground: #3d2817;
-  --sidebar-border: #3d28171a;
-  --sidebar-ring: #d4a853;
+  --sidebar: #f5f5f5;
+  --sidebar-foreground: #15181c;
+  --sidebar-primary: #15181c;
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: #e8e8e8;
+  --sidebar-accent-foreground: #15181c;
+  --sidebar-border: #15181c1a;
+  --sidebar-ring: #f7ab23;
 }
 
 .dark {
-  --background: #1a120d;
-  --foreground: #faf7f4;
-  --card: #3d2817;
-  --card-foreground: #faf7f4;
-  --popover: #3d2817;
-  --popover-foreground: #faf7f4;
-  --primary: #d4a853;
-  --primary-foreground: #3d2817;
-  --secondary: #4a3420;
-  --secondary-foreground: #faf7f4;
-  --muted: #4a3420;
-  --muted-foreground: #b89968;
-  --accent: #d4a853;
-  --accent-foreground: #3d2817;
+  --background: #15181c;
+  --foreground: #fff;
+  --card: #1f2227;
+  --card-foreground: #fff;
+  --popover: #1f2227;
+  --popover-foreground: #fff;
+  --primary: #f7ab23;
+  --primary-foreground: #15181c;
+  --secondary: #2a2d33;
+  --secondary-foreground: #fff;
+  --muted: #2a2d33;
+  --muted-foreground: #a5a8b2;
+  --accent: #f7ab23;
+  --accent-foreground: #15181c;
   --destructive: #c94141;
   --destructive-foreground: #fff;
-  --border: #d4a85333;
-  --input: #d4a8531a;
-  --ring: #d4a853;
+  --border: #f7ab2333;
+  --input: #f7ab231a;
+  --ring: #f7ab23;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: #d4a853;
-  --chart-2: #8b6f5c;
-  --chart-3: #e8c589;
-  --chart-4: #a68b6c;
-  --chart-5: #f0d9a8;
-  --sidebar: #3d2817;
-  --sidebar-foreground: #faf7f4;
-  --sidebar-primary: #d4a853;
-  --sidebar-primary-foreground: #3d2817;
-  --sidebar-accent: #4a3420;
-  --sidebar-accent-foreground: #faf7f4;
-  --sidebar-border: #d4a85333;
-  --sidebar-ring: #d4a853;
+  --chart-1: #f7ab23;
+  --chart-2: #7b7e8b;
+  --chart-3: #ffc04d;
+  --chart-4: #a5a8b2;
+  --chart-5: #ffd580;
+  --sidebar: #15181c;
+  --sidebar-foreground: #fff;
+  --sidebar-primary: #f7ab23;
+  --sidebar-primary-foreground: #15181c;
+  --sidebar-accent: #2a2d33;
+  --sidebar-accent-foreground: #fff;
+  --sidebar-border: #f7ab2333;
+  --sidebar-ring: #f7ab23;
 }
 
 html {

@@ -1,5 +1,6 @@
 import { Menu, X, Phone, Mail, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
+import logo from 'figma:asset/55fc416e58e8befb83e6a4b8f1d5dd7c7c251711.png';
 
 interface HeaderProps {
   currentPage: string;
@@ -18,10 +19,10 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
   ];
 
   return (
-    <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
+    <header className="bg-[#15181C] border-b border-border/20 sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top bar - hidden on mobile */}
-        <div className="py-2 border-b border-border hidden lg:flex justify-between items-center text-sm text-muted-foreground">
+        <div className="py-2 border-b border-white/10 hidden lg:flex justify-between items-center text-sm text-white/60">
           <div className="flex items-center gap-6">
             <a href="tel:+78001234567" className="flex items-center gap-2 hover:text-accent transition-colors">
               <Phone className="w-4 h-4" />
@@ -43,12 +44,8 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
             onClick={() => onNavigate('home')}
             className="flex items-center gap-2 sm:gap-3 group flex-shrink-0"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-accent to-[#B8903E] rounded-2xl flex items-center justify-center shadow-md">
-              <span className="text-primary font-bold text-sm sm:text-base">ДН</span>
-            </div>
-            <div className="text-left">
-              <div className="text-foreground text-sm sm:text-base font-medium">Дверной навигатор</div>
-              <div className="text-xs text-muted-foreground hidden sm:block">Ваш путь к идеальной двери</div>
+            <div className="h-10 sm:h-12">
+              <img src={logo} alt="Дверной навигатор" className="h-full w-auto object-contain" />
             </div>
           </button>
 
@@ -60,8 +57,8 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
                 onClick={() => onNavigate(item.id)}
                 className={`text-sm transition-colors relative group ${
                   currentPage === item.id
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-white'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 {item.label}
@@ -76,7 +73,7 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
             {/* Cart Button */}
             <button
               onClick={() => onNavigate('cart')}
-              className="relative p-2 text-muted-foreground hover:text-accent rounded-xl hover:bg-secondary transition-colors"
+              className="relative p-2 text-white/60 hover:text-accent rounded-xl hover:bg-white/5 transition-colors"
               aria-label="Корзина"
             >
               <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -97,7 +94,7 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-secondary transition-colors"
+              className="lg:hidden p-2 text-white/60 hover:text-white rounded-xl hover:bg-white/5 transition-colors"
               aria-label="Меню"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -108,7 +105,7 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-border bg-card">
+        <div className="lg:hidden border-t border-white/10 bg-[#15181C]">
           <nav className="px-4 py-4 space-y-2">
             {navItems.map((item) => (
               <button
@@ -119,8 +116,8 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
                 }}
                 className={`block w-full text-left px-4 py-3 rounded-2xl transition-colors ${
                   currentPage === item.id
-                    ? 'bg-accent/10 text-accent border border-accent/20'
-                    : 'text-muted-foreground hover:bg-secondary/50'
+                    ? 'bg-accent/20 text-accent border border-accent/30'
+                    : 'text-white/60 hover:bg-white/5'
                 }`}
               >
                 {item.label}
@@ -135,12 +132,12 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
             >
               Сконфигурировать дверь
             </button>
-            <div className="pt-4 mt-4 border-t border-border space-y-2">
-              <a href="tel:+78001234567" className="flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-accent transition-colors">
+            <div className="pt-4 mt-4 border-t border-white/10 space-y-2">
+              <a href="tel:+78001234567" className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-accent transition-colors">
                 <Phone className="w-4 h-4" />
                 <span className="text-sm">8 (800) 123-45-67</span>
               </a>
-              <a href="mailto:info@doorpoint.ru" className="flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-accent transition-colors">
+              <a href="mailto:info@doorpoint.ru" className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-accent transition-colors">
                 <Mail className="w-4 h-4" />
                 <span className="text-sm">info@doorpoint.ru</span>
               </a>
