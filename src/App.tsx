@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Home } from './components/Home';
-import { Catalog } from './components/Catalog';
-import { Configurator } from './components/Configurator';
+import { CatalogNew } from './components/CatalogNew';
+import { NewConfigurator } from './components/NewConfigurator';
 import { ProductPage } from './components/ProductPage';
 import { StandsMap } from './components/StandsMap';
 import { Checkout } from './components/Checkout';
@@ -101,11 +101,16 @@ export default function App() {
       
       <main className="flex-1">
         {currentPage === 'home' && <Home onNavigate={navigateTo} />}
-        {currentPage === 'catalog' && <Catalog onNavigate={navigateTo} addToCart={addToCart} />}
+        {currentPage === 'catalog' && (
+          <CatalogNew 
+            onNavigate={navigateTo}
+            onConfigureModel={(modelId) => {
+              navigateTo('configurator');
+            }}
+          />
+        )}
         {currentPage === 'configurator' && (
-          <Configurator 
-            state={configuratorState} 
-            setState={setConfiguratorState}
+          <NewConfigurator 
             onNavigate={navigateTo}
             addToCart={addToCart}
           />
