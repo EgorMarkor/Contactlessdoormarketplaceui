@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { DoorTypeBadge } from './DoorTypeBadge';
 import { getColorById, getOptionById, type DoorModelConfig } from '../../data/door-configurator-data';
+import { useAdminContent } from '../admin/AdminContentProvider';
 
 interface ConfiguratorPreviewProps {
   doorModel: DoorModelConfig;
@@ -15,6 +16,13 @@ export function ConfiguratorPreview({
   selectedOptions,
   totalPrice 
 }: ConfiguratorPreviewProps) {
+  const { entries } = useAdminContent();
+  const entry = entries[doorModel.id];
+  const linkedTexture = selectedColorId
+    ? entry?.textures?.find(texture => texture.linkedColorId === selectedColorId)
+    : undefined;
+  const fallbackTexture = linkedTexture ?? entry?.textures?.[0];
+  const modelAsset = entry?.modelAssets?.[0];
   const selectedColor = selectedColorId ? getColorById(selectedColorId) : null;
   const colorTheme = selectedColor
     ? {
@@ -36,15 +44,17 @@ export function ConfiguratorPreview({
       }[selectedColor.category]
     : null;
   const viewerGradient = colorTheme?.gradient ?? 'from-muted/30 via-secondary/60 to-muted/50';
-  const textureLabel = selectedColor
-    ? {
-        wood: 'Шпон натуральный',
-        solid: 'Эмаль матовая',
-        concrete: 'Бетонная фактура',
-        decorative: 'Декоративная текстура',
-        glass: 'Стеклянная вставка'
-      }[selectedColor.category]
-    : 'Базовая отделка';
+  const textureLabel = fallbackTexture?.name
+    ?? (selectedColor
+      ? {
+          wood: 'Шпон натуральный',
+          solid: 'Эмаль матовая',
+          concrete: 'Бетонная фактура',
+          decorative: 'Декоративная текстура',
+          glass: 'Стеклянная вставка'
+        }[selectedColor.category]
+      : 'Базовая отделка');
+  const modelFormat = modelAsset?.format?.toUpperCase() ?? 'GLB';
 
   return (
     <div className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-border">
@@ -94,7 +104,7 @@ export function ConfiguratorPreview({
           </div>
           <div className="flex items-center gap-1">
             <span className="px-2 py-1 rounded-full bg-black/20">HD</span>
-            <span>GLB</span>
+            <span>{modelFormat}</span>
           </div>
         </div>
 
@@ -120,6 +130,14 @@ export function ConfiguratorPreview({
             <div className="text-xs text-muted-foreground mb-1">Текстура модели</div>
             <div className="text-sm text-foreground">{textureLabel}</div>
           </div>
+          {modelAsset && (
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">3D модель</div>
+              <div className="text-sm text-foreground">
+                {modelAsset.name} · {modelFormat}
+              </div>
+            </div>
+          )}
 
           {selectedOptions.length > 0 && (
             <div>

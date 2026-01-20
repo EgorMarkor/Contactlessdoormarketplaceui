@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { DoorTypeBadge } from './DoorTypeBadge';
 import type { DoorModelConfig } from '../../data/door-configurator-data';
 import { doorModels } from '../../data/door-configurator-data';
+import { useAdminContent } from '../admin/AdminContentProvider';
 
 interface ModelSelectionProps {
   selectedModelId: string | null;
@@ -11,6 +12,7 @@ interface ModelSelectionProps {
 }
 
 export function ModelSelection({ selectedModelId, onSelect }: ModelSelectionProps) {
+  const { entries } = useAdminContent();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSeries, setSelectedSeries] = useState<string>('all');
 
@@ -93,18 +95,29 @@ export function ModelSelection({ selectedModelId, onSelect }: ModelSelectionProp
                       : 'border-border hover:border-accent/50 bg-card'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="text-sm sm:text-base text-foreground mb-1">{model.name}</div>
-                      <div className="text-xs text-muted-foreground">{model.series}</div>
-                    </div>
-                    <DoorTypeBadge type={model.type} />
-                  </div>
-                  
-                  <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">от</div>
-                    <div className="text-sm sm:text-base text-accent">{model.basePrice.toLocaleString('ru-RU')} ₽</div>
-                  </div>
+                  {(() => {
+                    const entry = entries[model.id];
+                    const modelCount = entry?.modelAssets?.length ?? 0;
+                    const textureCount = entry?.textures?.length ?? 0;
+                    return (
+                      <>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="text-sm sm:text-base text-foreground mb-1">{model.name}</div>
+                            <div className="text-xs text-muted-foreground">{model.series}</div>
+                          </div>
+                          <DoorTypeBadge type={model.type} />
+                        </div>
+                        
+                        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+                          <div className="text-xs text-muted-foreground">
+                            3D: {modelCount} · Текстуры: {textureCount}
+                          </div>
+                          <div className="text-sm sm:text-base text-accent">{model.basePrice.toLocaleString('ru-RU')} ₽</div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </motion.button>
               ))}
             </div>
