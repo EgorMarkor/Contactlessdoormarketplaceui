@@ -106,7 +106,11 @@ export const saveAdminContent = (state: AdminContentState) => {
   if (typeof window === 'undefined' || !window.localStorage) {
     return;
   }
-  window.localStorage.setItem(ADMIN_CONTENT_STORAGE_KEY, JSON.stringify(state));
+  try {
+    window.localStorage.setItem(ADMIN_CONTENT_STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn('Не удалось сохранить контент администратора в localStorage.', error);
+  }
 };
 
 export const getEntryByModelId = (state: AdminContentState, modelId: string) => {
