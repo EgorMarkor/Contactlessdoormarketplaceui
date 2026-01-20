@@ -45,6 +45,11 @@ export function Footer({ onNavigate }: FooterProps) {
                 </button>
               </li>
               <li>
+                <button onClick={() => onNavigate('management')} className="opacity-70 hover:opacity-100 hover:text-accent transition-all">
+                  Управление контентом
+                </button>
+              </li>
+              <li>
                 <button onClick={() => onNavigate('stands')} className="opacity-70 hover:opacity-100 hover:text-accent transition-all">
                   Стойки с образцами
                 </button>
