@@ -15,6 +15,9 @@ const readFileAsDataUrl = (file: File) =>
 const createId = (prefix: string) =>
   `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`}`;
 
+const MAX_UPLOAD_SIZE_MB = 4;
+const MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
+
 export function SeriesManager() {
   const { entries, updateEntry, addModelAsset, removeModelAsset, addTextureAsset, removeTextureAsset } =
     useAdminContent();
@@ -34,6 +37,8 @@ export function SeriesManager() {
     file: null as File | null
   });
   const [coverUploadError, setCoverUploadError] = useState('');
+  const [modelUploadError, setModelUploadError] = useState('');
+  const [textureUploadError, setTextureUploadError] = useState('');
 
   const entry = entries[selectedModelId];
   const seriesOptions = useMemo(() => {
@@ -73,6 +78,13 @@ export function SeriesManager() {
   const handleAddModelAsset = async () => {
     if (!modelDraft.file) return;
     const file = modelDraft.file;
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      setModelUploadError(
+        `Файл слишком большой для хранения в браузере. Максимум ${MAX_UPLOAD_SIZE_MB} МБ.`
+      );
+      return;
+    }
+    setModelUploadError('');
     const dataUrl = await readFileAsDataUrl(file);
     const asset: AdminModelAsset = {
       id: createId('model'),
@@ -91,6 +103,13 @@ export function SeriesManager() {
   const handleAddTextureAsset = async () => {
     if (!textureDraft.file) return;
     const file = textureDraft.file;
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      setTextureUploadError(
+        `Файл слишком большой для хранения в браузере. Максимум ${MAX_UPLOAD_SIZE_MB} МБ.`
+      );
+      return;
+    }
+    setTextureUploadError('');
     const dataUrl = await readFileAsDataUrl(file);
     const asset: AdminTextureAsset = {
       id: createId('texture'),
@@ -237,7 +256,10 @@ export function SeriesManager() {
               <input
                 type="file"
                 accept=".glb,.fbx,.gltf,.obj"
-                onChange={event => setModelDraft(prev => ({ ...prev, file: event.target.files?.[0] ?? null }))}
+                onChange={event => {
+                  setModelUploadError('');
+                  setModelDraft(prev => ({ ...prev, file: event.target.files?.[0] ?? null }));
+                }}
                 className="text-sm text-muted-foreground"
               />
             </div>
@@ -249,6 +271,7 @@ export function SeriesManager() {
               <UploadCloud className="w-4 h-4" />
               Прикрепить модель
             </button>
+            {modelUploadError && <p className="text-xs text-destructive">{modelUploadError}</p>}
           </div>
           <div className="space-y-3">
             {(entry?.modelAssets ?? []).length === 0 ? (
@@ -320,7 +343,10 @@ export function SeriesManager() {
               <input
                 type="file"
                 accept="image/*"
-                onChange={event => setTextureDraft(prev => ({ ...prev, file: event.target.files?.[0] ?? null }))}
+                onChange={event => {
+                  setTextureUploadError('');
+                  setTextureDraft(prev => ({ ...prev, file: event.target.files?.[0] ?? null }));
+                }}
                 className="text-sm text-muted-foreground"
               />
             </div>
@@ -332,6 +358,7 @@ export function SeriesManager() {
               <ImagePlus className="w-4 h-4" />
               Добавить текстуру
             </button>
+            {textureUploadError && <p className="text-xs text-destructive">{textureUploadError}</p>}
           </div>
 
           <div className="grid gap-3">
