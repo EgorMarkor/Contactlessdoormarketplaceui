@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Filter, X, Settings2, ShoppingCart } from 'lucide-react';
+import { Filter, X, Settings2 } from 'lucide-react';
 import { doorModels } from '../data/door-configurator-data';
 import { DoorTypeBadge } from './configurator/DoorTypeBadge';
 import type { DoorModelConfig } from '../data/door-configurator-data';
+import { useAdminContent } from './admin/AdminContentProvider';
 
 interface CatalogNewProps {
   onNavigate: (page: string) => void;
@@ -17,6 +18,7 @@ interface Filters {
 }
 
 export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
+  const { entries } = useAdminContent();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     priceRange: [0, 50000],
@@ -205,7 +207,14 @@ export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
 
             {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredDoors.map((door) => (
+              {filteredDoors.map((door) => {
+                const entry = entries[door.id];
+                const coverImage = entry?.coverImage;
+                const displayName = entry?.displayName || door.name;
+                const description = entry?.description;
+                const modelCount = entry?.modelAssets?.length ?? 0;
+                const textureCount = entry?.textures?.length ?? 0;
+                return (
                 <motion.div
                   key={door.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -214,21 +223,32 @@ export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
                 >
                   {/* Image Placeholder */}
                   <div className="aspect-[3/4] bg-gradient-to-br from-secondary via-secondary/50 to-secondary/30 relative overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-4xl text-muted-foreground/20">{door.name}</div>
-                    </div>
+                    {coverImage ? (
+                      <img src={coverImage} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-4xl text-muted-foreground/20">{displayName}</div>
+                      </div>
+                    )}
                     
                     {/* Badge */}
                     <div className="absolute top-3 right-3">
                       <DoorTypeBadge type={door.type} />
+                    </div>
+                    <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 text-[11px] text-foreground">
+                      <span className="px-2 py-1 rounded-full bg-black/35">3D: {modelCount}</span>
+                      <span className="px-2 py-1 rounded-full bg-black/35">Текстуры: {textureCount}</span>
                     </div>
                   </div>
 
                   {/* Content */}
                   <div className="p-4">
                     <div className="mb-3">
-                      <h3 className="text-foreground mb-1 text-base">{door.name}</h3>
+                      <h3 className="text-foreground mb-1 text-base">{displayName}</h3>
                       <p className="text-xs text-muted-foreground">Серия {door.series}</p>
+                      {description && (
+                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{description}</p>
+                      )}
                     </div>
 
                     <div className="flex items-baseline justify-between mb-4">
@@ -250,7 +270,7 @@ export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
                     </button>
                   </div>
                 </motion.div>
-              ))}
+              )})}
             </div>
 
             {filteredDoors.length === 0 && (

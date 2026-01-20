@@ -9,6 +9,7 @@ import { Checkout } from './components/Checkout';
 import { Cart } from './components/Cart';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { AdminContentProvider } from './components/admin/AdminContentProvider';
 
 type Page = 'home' | 'catalog' | 'configurator' | 'product' | 'stands' | 'checkout' | 'cart' | 'management';
 
@@ -93,52 +94,54 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header 
-        currentPage={currentPage} 
-        onNavigate={navigateTo}
-        cartItemsCount={cartItems.length}
-      />
-      
-      <main className="flex-1">
-        {currentPage === 'home' && <Home onNavigate={navigateTo} />}
-        {currentPage === 'catalog' && (
-          <CatalogNew 
-            onNavigate={navigateTo}
-            onConfigureModel={(modelId) => {
-              navigateTo('configurator');
-            }}
-          />
-        )}
-        {currentPage === 'configurator' && (
-          <NewConfigurator 
-            onNavigate={navigateTo}
-            addToCart={addToCart}
-          />
-        )}
-        {currentPage === 'product' && selectedDoor && (
-          <ProductPage door={selectedDoor} onNavigate={navigateTo} />
-        )}
-        {currentPage === 'stands' && <StandsMap onNavigate={navigateTo} />}
-        {currentPage === 'management' && <SeriesManager />}
-        {currentPage === 'cart' && (
-          <Cart 
-            items={cartItems}
-            onNavigate={navigateTo}
-            updateQuantity={updateCartItemQuantity}
-            removeItem={removeFromCart}
-          />
-        )}
-        {currentPage === 'checkout' && (
-          <Checkout 
-            cartItems={cartItems}
-            onNavigate={navigateTo}
-            clearCart={clearCart}
-          />
-        )}
-      </main>
+    <AdminContentProvider>
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header 
+          currentPage={currentPage} 
+          onNavigate={navigateTo}
+          cartItemsCount={cartItems.length}
+        />
+        
+        <main className="flex-1">
+          {currentPage === 'home' && <Home onNavigate={navigateTo} />}
+          {currentPage === 'catalog' && (
+            <CatalogNew 
+              onNavigate={navigateTo}
+              onConfigureModel={(modelId) => {
+                navigateTo('configurator');
+              }}
+            />
+          )}
+          {currentPage === 'configurator' && (
+            <NewConfigurator 
+              onNavigate={navigateTo}
+              addToCart={addToCart}
+            />
+          )}
+          {currentPage === 'product' && selectedDoor && (
+            <ProductPage door={selectedDoor} onNavigate={navigateTo} />
+          )}
+          {currentPage === 'stands' && <StandsMap onNavigate={navigateTo} />}
+          {currentPage === 'management' && <SeriesManager />}
+          {currentPage === 'cart' && (
+            <Cart 
+              items={cartItems}
+              onNavigate={navigateTo}
+              updateQuantity={updateCartItemQuantity}
+              removeItem={removeFromCart}
+            />
+          )}
+          {currentPage === 'checkout' && (
+            <Checkout 
+              cartItems={cartItems}
+              onNavigate={navigateTo}
+              clearCart={clearCart}
+            />
+          )}
+        </main>
 
-      <Footer onNavigate={navigateTo} />
-    </div>
+        <Footer onNavigate={navigateTo} />
+      </div>
+    </AdminContentProvider>
   );
 }
