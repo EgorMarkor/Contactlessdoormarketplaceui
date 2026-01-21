@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { UploadCloud, Sparkles, X, Loader2, CheckCircle2 } from 'lucide-react';
 import '@google/model-viewer';
 import { doorModels } from '../../data/door-configurator-data';
@@ -47,9 +47,7 @@ const fileToDataUrl = (file: File) =>
   });
 
 export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
-  const modelViewerRef = useRef<HTMLElement | null>(null);
   const [selectedColorId, setSelectedColorId] = useState(AI_COLOR_PRESETS[0].id);
-  const [modelLoaded, setModelLoaded] = useState(false);
   const [modelError, setModelError] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -76,20 +74,12 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
   }, [photoFile]);
 
   useEffect(() => {
-    const applyTexture = async () => {
-      if (!modelLoaded || !modelViewerRef.current || !selectedColor?.textureUrl) return;
-      const modelViewer = modelViewerRef.current as any;
-      if (!modelViewer.model?.materials?.length) return;
-      const texture = await modelViewer.createTexture(selectedColor.textureUrl);
-      modelViewer.model.materials.forEach((material: any) => {
-        const pbr = material.pbrMetallicRoughness;
-        if (!pbr?.baseColorTexture) return;
-        pbr.baseColorTexture.setTexture(texture);
-      });
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
     };
-
-    void applyTexture();
-  }, [modelLoaded, selectedColor]);
+  }, []);
 
   const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -182,8 +172,11 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-8" role="dialog">
-      <div className="w-full max-w-5xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center px-4 py-6 overflow-y-auto"
+      role="dialog"
+    >
+      <div className="w-full max-w-4xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div>
             <h2 className="text-foreground text-lg sm:text-xl">ИИ-подбор двери по фотографии</h2>
@@ -200,7 +193,7 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 p-6">
+        <div className="grid flex-1 grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 p-6 overflow-y-auto">
           <div className="space-y-5">
             <div className="rounded-2xl border border-dashed border-border p-5 bg-background/40">
               <div className="flex items-start gap-4">
@@ -227,7 +220,11 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
               </label>
               {photoPreview && (
                 <div className="mt-4 rounded-xl overflow-hidden border border-border">
-                  <img src={photoPreview} alt="Превью фото" className="w-full h-56 object-cover" />
+                  <img
+                    src={photoPreview}
+                    alt="Превью фото"
+                    className="w-full max-h-64 object-contain bg-muted/30"
+                  />
                 </div>
               )}
             </div>
@@ -288,7 +285,6 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
             </div>
             <div className="relative rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-secondary/30 via-secondary/60 to-muted/40 h-[420px]">
               <model-viewer
-                ref={modelViewerRef}
                 src={MODEL_URL}
                 alt="3D модель двери"
                 camera-controls
@@ -296,7 +292,6 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
                 exposure="0.85"
                 shadow-intensity="0.6"
                 onLoad={() => {
-                  setModelLoaded(true);
                   setModelError('');
                 }}
                 onError={() => {
