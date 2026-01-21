@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { UploadCloud, Sparkles, X, Loader2, CheckCircle2 } from 'lucide-react';
 import '@google/model-viewer';
 import { doorModels } from '../../data/door-configurator-data';
@@ -54,6 +54,7 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   const [aiRecommendation, setAiRecommendation] = useState<AiRecommendation | null>(null);
+  const modelViewerRef = useRef<HTMLElement | null>(null);
 
   const modelLabel = useMemo(() => {
     return doorModels.find(model => model.id === MODEL_ID)?.name ?? 'L1';
@@ -80,6 +81,35 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
+
+  const applySelectedTexture = async () => {
+    const viewer = modelViewerRef.current as
+      | (HTMLElement & {
+          model?: { materials: Array<{ pbrMetallicRoughness: { setBaseColorTexture: (tex: unknown) => void } }> };
+          createTexture?: (url: string) => Promise<unknown>;
+        })
+      | null;
+    if (!viewer?.model || !viewer.createTexture) return;
+    const texture = await viewer.createTexture(selectedColor.textureUrl);
+    viewer.model.materials.forEach(material => {
+      material.pbrMetallicRoughness.setBaseColorTexture(texture);
+    });
+  };
+
+  useEffect(() => {
+    const viewer = modelViewerRef.current;
+    if (!viewer) return;
+    const handleLoad = () => {
+      setModelError('');
+      void applySelectedTexture();
+    };
+    viewer.addEventListener('load', handleLoad);
+    return () => viewer.removeEventListener('load', handleLoad);
+  }, [selectedColor.textureUrl]);
+
+  useEffect(() => {
+    void applySelectedTexture();
+  }, [selectedColor.textureUrl]);
 
   const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -193,7 +223,43 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
           </button>
         </div>
 
-        <div className="grid flex-1 grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 p-6 overflow-y-auto">
+        <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-6">
+          <div className="rounded-2xl border border-border bg-background/40 p-4 flex flex-col gap-4 w-full">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm text-foreground">3D просмотр модели {modelLabel}</h3>
+                <p className="text-xs text-muted-foreground">Цвет: {selectedColor.name}</p>
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">L1</span>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-secondary/30 via-secondary/60 to-muted/40 w-full h-[45vh] min-h-[360px] sm:min-h-[480px] lg:min-h-[560px]">
+              <model-viewer
+                ref={modelViewerRef}
+                src={MODEL_URL}
+                alt="3D модель двери"
+                camera-controls
+                auto-rotate
+                exposure="0.85"
+                shadow-intensity="0.6"
+                onError={() => {
+                  setModelError('Добавьте 3D модель L1 в папку /public/assets/models, чтобы включить просмотр.');
+                }}
+                className="w-full h-full"
+              />
+              {modelError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs text-white px-6 text-center">
+                  {modelError}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => onApply({ modelId: MODEL_ID, colorId: selectedColorId })}
+              className="w-full px-4 py-3 rounded-xl border border-border text-sm text-foreground hover:border-accent/60 transition-colors"
+            >
+              Применить выбранный цвет
+            </button>
+          </div>
+
           <div className="space-y-5">
             <div className="rounded-2xl border border-dashed border-border p-5 bg-background/40">
               <div className="flex items-start gap-4">
@@ -273,44 +339,6 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
                 ))}
               </div>
             </div>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-background/40 p-4 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm text-foreground">3D просмотр модели {modelLabel}</h3>
-                <p className="text-xs text-muted-foreground">Цвет: {selectedColor.name}</p>
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">L1</span>
-            </div>
-            <div className="relative rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-secondary/30 via-secondary/60 to-muted/40 h-[420px]">
-              <model-viewer
-                src={MODEL_URL}
-                alt="3D модель двери"
-                camera-controls
-                auto-rotate
-                exposure="0.85"
-                shadow-intensity="0.6"
-                onLoad={() => {
-                  setModelError('');
-                }}
-                onError={() => {
-                  setModelError('Добавьте 3D модель L1 в папку /public/assets/models, чтобы включить просмотр.');
-                }}
-                className="w-full h-full"
-              />
-              {modelError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs text-white px-6 text-center">
-                  {modelError}
-                </div>
-              )}
-            </div>
-            <button
-              onClick={() => onApply({ modelId: MODEL_ID, colorId: selectedColorId })}
-              className="w-full px-4 py-3 rounded-xl border border-border text-sm text-foreground hover:border-accent/60 transition-colors"
-            >
-              Применить выбранный цвет
-            </button>
           </div>
         </div>
       </div>
