@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { DoorTypeBadge } from './DoorTypeBadge';
 import { getColorById, getOptionById, type DoorModelConfig } from '../../data/door-configurator-data';
 import { useAdminContent } from '../admin/AdminContentProvider';
+import '@google/model-viewer';
 
 interface ConfiguratorPreviewProps {
   doorModel: DoorModelConfig;
@@ -16,6 +18,7 @@ export function ConfiguratorPreview({
   selectedOptions,
   totalPrice 
 }: ConfiguratorPreviewProps) {
+  const [modelError, setModelError] = useState('');
   const { entries } = useAdminContent();
   const entry = entries[doorModel.id];
   const linkedTexture = selectedColorId
@@ -55,6 +58,8 @@ export function ConfiguratorPreview({
         }[selectedColor.category]
       : 'Базовая отделка');
   const modelFormat = modelAsset?.format?.toUpperCase() ?? 'GLB';
+  const isL1Model = doorModel.id === 'l1';
+  const modelViewerSrc = '/assets/models/door-l1.glb';
 
   return (
     <div className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-border">
@@ -66,30 +71,63 @@ export function ConfiguratorPreview({
             <span className="hidden sm:inline">Потяните для поворота</span>
           </div>
 
-          <motion.div
-            key={doorModel.id + selectedColorId}
-            initial={{ rotateX: -10, rotateY: 15, opacity: 0 }}
-            animate={{ rotateX: -6, rotateY: 18, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="relative w-full max-w-[230px] aspect-[3/5]"
-            style={{ perspective: '1000px' }}
-          >
-            <div className="absolute inset-0 rounded-[26px] bg-black/20 blur-xl" />
-            <div
-              className="relative h-full rounded-[22px] border border-white/30 shadow-2xl overflow-hidden"
-              style={{ transform: 'rotateY(-12deg) rotateX(4deg)' }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent" />
-              <div className="absolute inset-4 rounded-2xl border border-white/30" />
-              <div className="absolute inset-8 rounded-xl border border-white/20" />
-              <div className="absolute right-6 top-1/2 h-12 w-2 rounded-full bg-black/30" />
-              <div className="absolute left-0 top-0 h-full w-2 bg-white/40" />
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 text-[10px] sm:text-xs text-white/80">
-                Текстура: {textureLabel}
+          {isL1Model ? (
+            <div className="relative w-full max-w-[280px] aspect-[3/5]">
+              <div className="absolute inset-0 rounded-[28px] bg-black/20 blur-xl" />
+              <div className="relative h-full rounded-[24px] border border-white/30 shadow-2xl overflow-hidden bg-black/15">
+                <model-viewer
+                  src={modelViewerSrc}
+                  alt="3D модель двери L1"
+                  camera-controls
+                  auto-rotate
+                  exposure="0.85"
+                  shadow-intensity="0.6"
+                  onLoad={() => {
+                    setModelError('');
+                  }}
+                  onError={() => {
+                    setModelError(
+                      'Добавьте 3D модель L1 в папку /public/assets/models, чтобы включить просмотр.'
+                    );
+                  }}
+                  className="w-full h-full"
+                />
+                {modelError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-xs text-white px-6 text-center">
+                    {modelError}
+                  </div>
+                )}
+                <div className="absolute bottom-4 left-4 right-4 text-[10px] sm:text-xs text-white/80">
+                  Текстура: {textureLabel}
+                </div>
               </div>
             </div>
-          </motion.div>
+          ) : (
+            <motion.div
+              key={doorModel.id + selectedColorId}
+              initial={{ rotateX: -10, rotateY: 15, opacity: 0 }}
+              animate={{ rotateX: -6, rotateY: 18, opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="relative w-full max-w-[230px] aspect-[3/5]"
+              style={{ perspective: '1000px' }}
+            >
+              <div className="absolute inset-0 rounded-[26px] bg-black/20 blur-xl" />
+              <div
+                className="relative h-full rounded-[22px] border border-white/30 shadow-2xl overflow-hidden"
+                style={{ transform: 'rotateY(-12deg) rotateX(4deg)' }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent" />
+                <div className="absolute inset-4 rounded-2xl border border-white/30" />
+                <div className="absolute inset-8 rounded-xl border border-white/20" />
+                <div className="absolute right-6 top-1/2 h-12 w-2 rounded-full bg-black/30" />
+                <div className="absolute left-0 top-0 h-full w-2 bg-white/40" />
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-[10px] sm:text-xs text-white/80">
+                  Текстура: {textureLabel}
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           <div className="mt-6 text-center">
             <div className="text-sm sm:text-base text-foreground/90 mb-2">{doorModel.name}</div>
