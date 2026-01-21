@@ -5,6 +5,7 @@ import { doorModels } from '../data/door-configurator-data';
 import { DoorTypeBadge } from './configurator/DoorTypeBadge';
 import type { DoorModelConfig } from '../data/door-configurator-data';
 import { useAdminContent } from './admin/AdminContentProvider';
+import { AiDoorPicker } from './catalog/AiDoorPicker';
 
 interface CatalogNewProps {
   onNavigate: (page: string) => void;
@@ -20,6 +21,8 @@ interface Filters {
 export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
   const { entries } = useAdminContent();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showAiPicker, setShowAiPicker] = useState(false);
+  const [aiSelection, setAiSelection] = useState<{ modelId: string; colorId: string } | null>(null);
   const [filters, setFilters] = useState<Filters>({
     priceRange: [0, 50000],
     series: [],
@@ -182,6 +185,31 @@ export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
           </p>
         </div>
 
+        <div className="mb-6 sm:mb-8">
+          <div className="bg-gradient-to-r from-accent/15 via-accent/5 to-transparent border border-accent/30 rounded-3xl p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs text-accent bg-accent/15 px-3 py-1 rounded-full mb-3">
+                ИИ-подбор по фото
+              </div>
+              <h2 className="text-foreground text-lg sm:text-xl mb-2">Подберите идеальную дверь под интерьер</h2>
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                Сфотографируйте дверной проём с обоями и полом. ИИ предложит модель двери и цвет из ассортимента.
+              </p>
+              {aiSelection && (
+                <div className="mt-3 text-xs text-foreground/80">
+                  Последняя рекомендация: модель {aiSelection.modelId.toUpperCase()}, цвет {aiSelection.colorId.toUpperCase()}.
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setShowAiPicker(true)}
+              className="px-5 py-3 rounded-2xl bg-accent text-accent-foreground text-sm hover:bg-accent/90 transition-colors"
+            >
+              Запустить ИИ-подбор
+            </button>
+          </div>
+        </div>
+
         <div className="flex gap-6 lg:gap-8">
           {/* Desktop Filters */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
@@ -323,6 +351,16 @@ export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {showAiPicker && (
+        <AiDoorPicker
+          onClose={() => setShowAiPicker(false)}
+          onApply={(selection) => {
+            setAiSelection(selection);
+            onConfigureModel(selection.modelId);
+          }}
+        />
       )}
     </div>
   );
