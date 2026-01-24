@@ -14,29 +14,55 @@ interface AiRecommendation {
   explanation: string;
 }
 
-const MODEL_ID = 'l1';
-const MODEL_URL = '/assets/models/door-l1.glb';
+const DEFAULT_MODEL_ID = 'l1';
+const getModelUrl = (modelId: string) => `/assets/models/door-${modelId}.glb`;
+
+const getTextureUrl = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes('бел') || lower.includes('снеж')) {
+    return '/assets/textures/ai/ai-solid-blanco.jpg';
+  }
+  if (lower.includes('черн') || lower.includes('графит') || lower.includes('дымчат')) {
+    return '/assets/textures/ai/ai-graphite.jpg';
+  }
+  return '/assets/textures/ai/ai-sand.jpg';
+};
 
 const AI_COLOR_PRESETS = [
-  {
-    id: 'solid-1',
-    name: 'Белый бланко',
-    textureUrl: '/assets/textures/ai/ai-solid-blanco.svg',
-    swatch: '#EDEAE4'
-  },
-  {
-    id: 'solid-5',
-    name: 'Графит',
-    textureUrl: '/assets/textures/ai/ai-graphite.svg',
-    swatch: '#454A52'
-  },
-  {
-    id: 'wood-3',
-    name: 'Орех',
-    textureUrl: '/assets/textures/ai/ai-sand.svg',
-    swatch: '#C6AE8E'
-  }
-];
+  { id: 'northern-oak', name: 'Северный дуб', swatch: '#C9B59A' },
+  { id: 'milky-oak', name: 'Молочный дуб', swatch: '#E6D7C3' },
+  { id: 'dark-oak', name: 'Темный дуб', swatch: '#6B4A32' },
+  { id: 'smoky-oak', name: 'Дымчатый дуб', swatch: '#8A7766' },
+  { id: 'misty-oak', name: 'Туманный дуб', swatch: '#B9ADA0' },
+  { id: 'classic-oak', name: 'Классик дуб', swatch: '#B2875A' },
+  { id: 'alpine-oak', name: 'Альпийский дуб', swatch: '#D7C3A7' },
+  { id: 'riviera-ice', name: 'Ривьера ледяная', swatch: '#DCE6EB' },
+  { id: 'cape-ash', name: 'Мыс пепельный', swatch: '#9B8F83' },
+  { id: 'sandy-shore', name: 'Берег песчаный', swatch: '#D2B48C' },
+  { id: 'golden-valley', name: 'Долина золотая', swatch: '#C9A25B' },
+  { id: 'karelian-forest', name: 'Лес карельский', swatch: '#7A5A3A' },
+  { id: 'amber-bay', name: 'Бухта янтарная', swatch: '#C68642' },
+  { id: 'savanna-lux', name: 'Саванна люкс', swatch: '#C7A97D' },
+  { id: 'desert-lux', name: 'Пустыня люкс', swatch: '#C19A6B' },
+  { id: 'terracotta-lux', name: 'Терракота люкс', swatch: '#B85C38' },
+  { id: 'dunes-lux', name: 'Дюны люкс', swatch: '#D8B98A' },
+  { id: 'canyon-lux', name: 'Каньон люкс', swatch: '#8C4E2E' },
+  { id: 'white-cotton', name: 'Хлопок белый', swatch: '#F5F2ED' },
+  { id: 'light-eucalyptus', name: 'Эвкалипт светлый', swatch: '#C7D3C4' },
+  { id: 'graphite-juniper', name: 'Можжевельник графитовый', swatch: '#4E5451' },
+  { id: 'creamy-linen', name: 'Лен сливочный', swatch: '#F1E4CF' },
+  { id: 'pink-almond', name: 'Миндаль розовый', swatch: '#E5C7BE' },
+  { id: 'warm-laurel', name: 'Лавр теплый', swatch: '#A39B6A' },
+  { id: 'warm-concrete', name: 'Теплый бетон', swatch: '#B9B1A6' },
+  { id: 'snow-concrete', name: 'Снежный бетон', swatch: '#E8E8E6' },
+  { id: 'graphite-concrete', name: 'Графит бетон', swatch: '#5B5C5E' },
+  { id: 'absolute-concrete', name: 'Абсолют бетон', swatch: '#3F4042' },
+  { id: 'white-sand', name: 'Песок белый', swatch: '#E9DFCF' },
+  { id: 'black-sand', name: 'Песок черный', swatch: '#2F2F2F' }
+].map(color => ({
+  ...color,
+  textureUrl: getTextureUrl(color.name)
+}));
 
 const fileToDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -47,6 +73,7 @@ const fileToDataUrl = (file: File) =>
   });
 
 export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
+  const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
   const [selectedColorId, setSelectedColorId] = useState(AI_COLOR_PRESETS[0].id);
   const [modelError, setModelError] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -56,8 +83,10 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
   const [aiRecommendation, setAiRecommendation] = useState<AiRecommendation | null>(null);
 
   const modelLabel = useMemo(() => {
-    return doorModels.find(model => model.id === MODEL_ID)?.name ?? 'L1';
-  }, []);
+    return doorModels.find(model => model.id === selectedModelId)?.name ?? selectedModelId.toUpperCase();
+  }, [selectedModelId]);
+
+  const modelUrl = useMemo(() => getModelUrl(selectedModelId), [selectedModelId]);
 
   const selectedColor = useMemo(() => {
     return AI_COLOR_PRESETS.find(color => color.id === selectedColorId) ?? AI_COLOR_PRESETS[0];
@@ -81,6 +110,10 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
     };
   }, []);
 
+  useEffect(() => {
+    setModelError('');
+  }, [selectedModelId]);
+
   const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -97,7 +130,7 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
 
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
     if (!apiKey) {
-      setAiError('Добавьте VITE_OPENAI_API_KEY в .env, чтобы включить подбор через ChatGPT API.');
+      setAiError('Добавьте VITE_OPENAI_API_KEY в .env или .env.production, чтобы включить подбор через ChatGPT API.');
       return;
     }
 
@@ -105,6 +138,7 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
       setAiLoading(true);
       setAiError('');
       const imageDataUrl = await fileToDataUrl(photoFile);
+      const modelContext = doorModels.map(model => `${model.id} — ${model.name}`).join(', ');
       const colorContext = AI_COLOR_PRESETS.map(color => `${color.id} — ${color.name}`).join(', ');
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -119,7 +153,7 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
             {
               role: 'system',
               content:
-                'Ты помощник салона дверей. Подбирай модель и цвет двери по фото интерьера. Отвечай строго JSON-объектом.'
+                'Ты помощник салона дверей. Подбирай модель и цвет двери по фото интерьера. Учитывай стиль, тональность, материалы и освещение. Отвечай строго JSON-объектом.'
             },
             {
               role: 'user',
@@ -128,8 +162,10 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
                   type: 'text',
                   text:
                     `Проанализируй фото дверного проёма (обои, пол, общая тональность). ` +
-                    `Разрешена только модель ${MODEL_ID.toUpperCase()} и цвета: ${colorContext}. ` +
-                    'Ответь JSON вида: {"modelId":"l1","colorId":"solid-1","explanation":"..."}.'
+                    `Разрешены только модели: ${modelContext}. ` +
+                    `Разрешены только цвета: ${colorContext}. ` +
+                    'Ответь JSON вида: {"modelId":"l1","colorId":"northern-oak","explanation":"..."}.' +
+                    ' В explanation кратко объясни выбор модели и цвета.'
                 },
                 { type: 'image_url', image_url: { url: imageDataUrl } }
               ]
@@ -152,16 +188,20 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
         parsed = null;
       }
 
+      const safeModelId = doorModels.some(model => model.id === parsed?.modelId)
+        ? parsed?.modelId ?? DEFAULT_MODEL_ID
+        : DEFAULT_MODEL_ID;
       const safeColorId = AI_COLOR_PRESETS.some(color => color.id === parsed?.colorId)
         ? parsed?.colorId
         : AI_COLOR_PRESETS[0].id;
       const recommendation: AiRecommendation = {
-        modelId: parsed?.modelId === MODEL_ID ? MODEL_ID : MODEL_ID,
+        modelId: safeModelId,
         colorId: safeColorId,
         explanation: parsed?.explanation || 'Подбор выполнен с учетом освещения и оттенков интерьера.'
       };
 
       setAiRecommendation(recommendation);
+      setSelectedModelId(recommendation.modelId);
       setSelectedColorId(recommendation.colorId);
       onApply({ modelId: recommendation.modelId, colorId: recommendation.colorId });
     } catch (error) {
@@ -255,7 +295,7 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
             </div>
 
             <div className="rounded-2xl border border-border p-5 bg-background/40">
-              <h3 className="text-sm text-foreground mb-3">Доступные цвета L1</h3>
+              <h3 className="text-sm text-foreground mb-3">Доступные цвета</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {AI_COLOR_PRESETS.map(color => (
                   <button
@@ -281,11 +321,13 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
                 <h3 className="text-sm text-foreground">3D просмотр модели {modelLabel}</h3>
                 <p className="text-xs text-muted-foreground">Цвет: {selectedColor.name}</p>
               </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">L1</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                {selectedModelId.toUpperCase()}
+              </span>
             </div>
             <div className="relative rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-secondary/30 via-secondary/60 to-muted/40 h-[420px]">
               <model-viewer
-                src={MODEL_URL}
+                src={modelUrl}
                 alt="3D модель двери"
                 camera-controls
                 auto-rotate
@@ -295,7 +337,9 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
                   setModelError('');
                 }}
                 onError={() => {
-                  setModelError('Добавьте 3D модель L1 в папку /public/assets/models, чтобы включить просмотр.');
+                  setModelError(
+                    `Добавьте 3D модель door-${selectedModelId}.glb в папку /public/assets/models, чтобы включить просмотр.`
+                  );
                 }}
                 className="w-full h-full"
               />
@@ -306,7 +350,7 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
               )}
             </div>
             <button
-              onClick={() => onApply({ modelId: MODEL_ID, colorId: selectedColorId })}
+              onClick={() => onApply({ modelId: selectedModelId, colorId: selectedColorId })}
               className="w-full px-4 py-3 rounded-xl border border-border text-sm text-foreground hover:border-accent/60 transition-colors"
             >
               Применить выбранный цвет
@@ -319,8 +363,8 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
 }
 
 export const aiDoorPickerModel = {
-  id: MODEL_ID,
-  url: MODEL_URL
+  id: DEFAULT_MODEL_ID,
+  url: getModelUrl(DEFAULT_MODEL_ID)
 };
 
 export const aiDoorPickerTexturePresets = AI_COLOR_PRESETS.map(color => ({
