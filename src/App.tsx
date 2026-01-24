@@ -35,6 +35,12 @@ export interface ConfiguratorState {
   frameType: string;
 }
 
+export interface AiSelection {
+  modelId: string;
+  colorId: string;
+  nonce: number;
+}
+
 export interface CartItem {
   id: string;
   doorModel: DoorModel;
@@ -53,10 +59,20 @@ export default function App() {
     glass: 'Без стекла',
     frameType: 'Стандартная коробка',
   });
+  const [aiSelection, setAiSelection] = useState<AiSelection | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  const navigateTo = (page: Page, door?: DoorModel) => {
+  const navigateTo = (page: Page, door?: DoorModel, options?: { aiSelection?: AiSelection | null }) => {
     setCurrentPage(page);
+
+    if (page === 'configurator' && !options?.aiSelection) {
+      setAiSelection(null);
+    }
+
+    if (options?.aiSelection) {
+      setAiSelection(options.aiSelection);
+    }
+
     if (door) {
       setSelectedDoor(door);
       setConfiguratorState({
@@ -107,8 +123,12 @@ export default function App() {
           {currentPage === 'catalog' && (
             <CatalogNew 
               onNavigate={navigateTo}
-              onConfigureModel={(modelId) => {
-                navigateTo('configurator');
+              onConfigureModel={(selection) => {
+                const selectionWithNonce: AiSelection = {
+                  ...selection,
+                  nonce: Date.now(),
+                };
+                navigateTo('configurator', undefined, { aiSelection: selectionWithNonce });
               }}
             />
           )}
@@ -116,6 +136,7 @@ export default function App() {
             <NewConfigurator 
               onNavigate={navigateTo}
               addToCart={addToCart}
+              aiSelection={aiSelection}
             />
           )}
           {currentPage === 'product' && selectedDoor && (

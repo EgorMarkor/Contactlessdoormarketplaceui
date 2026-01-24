@@ -13,14 +13,17 @@ import {
   getOptionById,
   type DoorModelConfig
 } from '../data/door-configurator-data';
-import type { CartItem } from '../App';
+import type { AiSelection, CartItem } from '../App';
 
 interface NewConfiguratorProps {
   onNavigate: (page: string) => void;
   addToCart: (item: Omit<CartItem, 'id'>) => void;
+  aiSelection?: AiSelection | null;
 }
 
-export function NewConfigurator({ onNavigate, addToCart }: NewConfiguratorProps) {
+const AI_RECOMMENDED_MODEL_ID = 'l1';
+
+export function NewConfigurator({ onNavigate, addToCart, aiSelection }: NewConfiguratorProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedModel, setSelectedModel] = useState<DoorModelConfig | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
@@ -45,6 +48,23 @@ export function NewConfigurator({ onNavigate, addToCart }: NewConfiguratorProps)
       }
     }
   }, [selectedModel, currentStep]);
+
+  useEffect(() => {
+    if (!aiSelection) return;
+
+    const recommendedDoor = getDoorById(AI_RECOMMENDED_MODEL_ID);
+    if (!recommendedDoor) return;
+
+    const fallbackColorId = recommendedDoor.lockedColors?.[0] ?? recommendedDoor.availableColors[0] ?? null;
+    const nextColorId = recommendedDoor.availableColors.includes(aiSelection.colorId)
+      ? aiSelection.colorId
+      : fallbackColorId;
+
+    setSelectedModel(recommendedDoor);
+    setSelectedOptions([]);
+    setSelectedColorId(nextColorId);
+    setCurrentStep(nextColorId ? 2 : 1);
+  }, [aiSelection]);
 
   const handleModelSelect = (model: DoorModelConfig) => {
     setSelectedModel(model);
