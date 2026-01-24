@@ -122,94 +122,136 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
     setAiError('');
   };
 
-  const handleAiPick = async () => {
-    if (!photoFile) {
-      setAiError('Загрузите фотографию дверного проёма, чтобы получить подбор.');
-      return;
+
+async function convertToJpeg(file: File): Promise<File> {
+  if (
+    file.type === 'image/jpeg' ||
+    file.type === 'image/png' ||
+    file.type === 'image/webp'
+  ) {
+    return file;
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement('canvas');
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(bitmap, 0, 0);
+
+  const blob: Blob = await new Promise(resolve =>
+    canvas.toBlob(b => resolve(b!), 'image/jpeg', 0.9)
+  );
+
+  return new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+}
+
+
+async function uploadToImgbb(file: File): Promise<string> {
+  const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
+  if (!apiKey) throw new Error('Нет VITE_IMGBB_API_KEY');
+
+  const form = new FormData();
+  form.append('image', file);
+
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+    method: 'POST',
+    body: form
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('ImgBB upload error: ' + err);
+  }
+
+  const data = await res.json();
+  return data.data.url; // ✅ публичный https URL
+}
+
+
+const handleAiPick = async () => {
+  if (!photoFile) {
+    setAiError('Загрузите фотографию дверного проёма.');
+    return;
+  }
+
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  if (!apiKey) {
+    setAiError('Нет VITE_OPENAI_API_KEY');
+    return;
+  }
+
+  try {
+    setAiLoading(true);
+    setAiError('');
+
+    // 1️⃣ грузим фото во внешний сервис
+    const safeFile = await convertToJpeg(photoFile);
+    const imageUrl = await uploadToImgbb(safeFile);
+
+    const modelContext = doorModels.map(m => `${m.id} — ${m.name}`).join(', ');
+    const colorContext = AI_COLOR_PRESETS.map(c => `${c.id} — ${c.name}`).join(', ');
+
+    // 2️⃣ chat/completions
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        temperature: 0.4,
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Ты помощник салона дверей. Подбирай модель и цвет двери по фото интерьера. ' +
+              'Отвечай строго JSON.'
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text:
+                  `Проанализируй фото дверного проёма. ` +
+                  `Разрешены модели: ${modelContext}. ` +
+                  `Разрешены цвета: ${colorContext}. ` +
+                  'Ответь JSON вида {"modelId":"l1","colorId":"northern-oak","explanation":"..."}'
+              },
+              {
+                type: 'image_url',
+                image_url: { url: imageUrl }
+              }
+            ]
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`OpenAI ${response.status}: ${err}`);
     }
 
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-    if (!apiKey) {
-      setAiError('Добавьте VITE_OPENAI_API_KEY в .env или .env.production, чтобы включить подбор через ChatGPT API.');
-      return;
-    }
+    const data = await response.json();
+    const parsed = JSON.parse(data.choices[0].message.content);
 
-    try {
-      setAiLoading(true);
-      setAiError('');
-      const imageDataUrl = await fileToDataUrl(photoFile);
-      const modelContext = doorModels.map(model => `${model.id} — ${model.name}`).join(', ');
-      const colorContext = AI_COLOR_PRESETS.map(color => `${color.id} — ${color.name}`).join(', ');
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          temperature: 0.4,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Ты помощник салона дверей. Подбирай модель и цвет двери по фото интерьера. Учитывай стиль, тональность, материалы и освещение. Отвечай строго JSON-объектом.'
-            },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text:
-                    `Проанализируй фото дверного проёма (обои, пол, общая тональность). ` +
-                    `Разрешены только модели: ${modelContext}. ` +
-                    `Разрешены только цвета: ${colorContext}. ` +
-                    'Ответь JSON вида: {"modelId":"l1","colorId":"northern-oak","explanation":"..."}.' +
-                    ' В explanation кратко объясни выбор модели и цвета.'
-                },
-                { type: 'image_url', image_url: { url: imageDataUrl } }
-              ]
-            }
-          ]
-        })
-      });
+    setAiRecommendation(parsed);
+    setSelectedModelId(parsed.modelId);
+    setSelectedColorId(parsed.colorId);
+    onApply({ modelId: parsed.modelId, colorId: parsed.colorId });
+  } catch (e) {
+    setAiError(e instanceof Error ? e.message : 'Ошибка AI-подбора');
+  } finally {
+    setAiLoading(false);
+  }
+};
 
-      if (!response.ok) {
-        throw new Error('Не удалось получить ответ от ChatGPT API.');
-      }
 
-      const data = await response.json();
-      const content: string = data?.choices?.[0]?.message?.content ?? '';
-      let parsed: AiRecommendation | null = null;
-
-      try {
-        parsed = JSON.parse(content) as AiRecommendation;
-      } catch {
-        parsed = null;
-      }
-
-      const safeModelId = doorModels.some(model => model.id === parsed?.modelId)
-        ? parsed?.modelId ?? DEFAULT_MODEL_ID
-        : DEFAULT_MODEL_ID;
-      const safeColorId = AI_COLOR_PRESETS.some(color => color.id === parsed?.colorId)
-        ? parsed?.colorId
-        : AI_COLOR_PRESETS[0].id;
-      const recommendation: AiRecommendation = {
-        modelId: safeModelId,
-        colorId: safeColorId,
-        explanation: parsed?.explanation || 'Подбор выполнен с учетом освещения и оттенков интерьера.'
-      };
-
-      setAiRecommendation(recommendation);
-      setSelectedModelId(recommendation.modelId);
-      setSelectedColorId(recommendation.colorId);
-      onApply({ modelId: recommendation.modelId, colorId: recommendation.colorId });
-    } catch (error) {
-      setAiError(error instanceof Error ? error.message : 'Не удалось получить подбор.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   return (
     <div

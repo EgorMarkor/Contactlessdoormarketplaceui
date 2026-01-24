@@ -49,9 +49,10 @@
             "vaul": "^1.1.2"
       },
       "devDependencies": {
+            "@rollup/rollup-darwin-arm64": "^4.56.0",
             "@types/node": "^20.10.0",
             "@vitejs/plugin-react-swc": "^3.10.2",
-            "vite": "6.3.5"
+            "vite": "^6.4.1"
       },
       "scripts": {
             "dev": "vite",

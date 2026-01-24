@@ -23,6 +23,7 @@ export interface ColorOption {
   name: string;
   category: ColorCategory;
   price: number;
+  textureUrl: string;
 }
 
 export interface ConfigOption {
@@ -37,50 +38,64 @@ export interface ConfigOption {
 // COLOR OPTIONS
 // =====================
 
+const TEXTURES = {
+  wood: '/assets/textures/ai/ai-sand.jpg',
+  concrete: '/assets/textures/ai/ai-graphite.jpg',
+  solid: '/assets/textures/ai/ai-solid-blanco.jpg',
+  decorative: '/assets/textures/ai/ai-sand.jpg',
+  glass: '/assets/textures/ai/ai-solid-blanco.jpg'
+};
+
+
 export const colorOptions: ColorOption[] = [
   // WOOD TEXTURES
-  { id: 'wood-1', name: 'Беленый дуб', category: 'wood', price: 1500 },
-  { id: 'wood-2', name: 'Венге', category: 'wood', price: 2500 },
-  { id: 'wood-3', name: 'Орех', category: 'wood', price: 2000 },
-  { id: 'wood-4', name: 'Ясень белый', category: 'wood', price: 1800 },
-  { id: 'wood-5', name: 'Дуб сухой', category: 'wood', price: 1500 },
-  { id: 'wood-6', name: 'Дуб северный', category: 'wood', price: 1600 },
-  { id: 'wood-7', name: 'Дуб капучино', category: 'wood', price: 1700 },
-  { id: 'wood-8', name: 'Дуб серый', category: 'wood', price: 1600 },
-  { id: 'wood-9', name: 'Ковентри', category: 'wood', price: 1900 },
-  { id: 'wood-10', name: 'Оливковый слэб', category: 'wood', price: 2100 },
+  { id: 'wood-1', name: 'Беленый дуб', category: 'wood', price: 1500, textureUrl: TEXTURES.wood },
+{ id: 'wood-2', name: 'Венге', category: 'wood', price: 2500, textureUrl: TEXTURES.wood },
+{ id: 'wood-3', name: 'Орех', category: 'wood', price: 2000, textureUrl: TEXTURES.wood },
+{ id: 'wood-4', name: 'Ясень белый', category: 'wood', price: 1800, textureUrl: TEXTURES.wood },
+{ id: 'wood-5', name: 'Дуб сухой', category: 'wood', price: 1500, textureUrl: TEXTURES.wood },
+{ id: 'wood-6', name: 'Дуб северный', category: 'wood', price: 1600, textureUrl: TEXTURES.wood },
+{ id: 'wood-7', name: 'Дуб капучино', category: 'wood', price: 1700, textureUrl: TEXTURES.wood },
+{ id: 'wood-8', name: 'Дуб серый', category: 'wood', price: 1600, textureUrl: TEXTURES.wood },
+{ id: 'wood-9', name: 'Ковентри', category: 'wood', price: 1900, textureUrl: TEXTURES.wood },
+{ id: 'wood-10', name: 'Оливковый слэб', category: 'wood', price: 2100, textureUrl: TEXTURES.wood },
+
 
   // SOLID / ENAMEL COLORS
-  { id: 'solid-1', name: 'Белый бланко', category: 'solid', price: 500 },
-  { id: 'solid-2', name: 'Грей', category: 'solid', price: 800 },
-  { id: 'solid-3', name: 'Вайт', category: 'solid', price: 500 },
-  { id: 'solid-4', name: 'Светло-серый', category: 'solid', price: 700 },
-  { id: 'solid-5', name: 'Графит', category: 'solid', price: 1000 },
-  { id: 'solid-6', name: 'Капучино', category: 'solid', price: 900 },
-  { id: 'solid-7', name: 'Слоновая кость', category: 'solid', price: 1100 },
-  { id: 'solid-8', name: 'Шелк серый', category: 'solid', price: 1200 },
-  { id: 'solid-9', name: 'Арктик', category: 'solid', price: 800 },
-  { id: 'solid-10', name: 'Пацифик', category: 'solid', price: 900 },
+  { id: 'solid-1', name: 'Белый бланко', category: 'solid', price: 500, textureUrl: TEXTURES.solid },
+{ id: 'solid-2', name: 'Грей', category: 'solid', price: 800, textureUrl: TEXTURES.solid },
+{ id: 'solid-3', name: 'Вайт', category: 'solid', price: 500, textureUrl: TEXTURES.solid },
+{ id: 'solid-4', name: 'Светло-серый', category: 'solid', price: 700, textureUrl: TEXTURES.solid },
+{ id: 'solid-5', name: 'Графит', category: 'solid', price: 1000, textureUrl: TEXTURES.solid },
+{ id: 'solid-6', name: 'Капучино', category: 'solid', price: 900, textureUrl: TEXTURES.solid },
+{ id: 'solid-7', name: 'Слоновая кость', category: 'solid', price: 1100, textureUrl: TEXTURES.solid },
+{ id: 'solid-8', name: 'Шелк серый', category: 'solid', price: 1200, textureUrl: TEXTURES.solid },
+{ id: 'solid-9', name: 'Арктик', category: 'solid', price: 800, textureUrl: TEXTURES.solid },
+{ id: 'solid-10', name: 'Пацифик', category: 'solid', price: 900, textureUrl: TEXTURES.solid },
+
 
   // CONCRETE
-  { id: 'concrete-1', name: 'Бетон бежевый', category: 'concrete', price: 1300 },
-  { id: 'concrete-2', name: 'Бетон снежный', category: 'concrete', price: 1400 },
-  { id: 'concrete-3', name: 'Бетон графит', category: 'concrete', price: 1500 },
-  { id: 'concrete-4', name: 'Бетон темный', category: 'concrete', price: 1400 },
+  { id: 'concrete-1', name: 'Бетон бежевый', category: 'concrete', price: 1300, textureUrl: TEXTURES.concrete },
+{ id: 'concrete-2', name: 'Бетон снежный', category: 'concrete', price: 1400, textureUrl: TEXTURES.concrete },
+{ id: 'concrete-3', name: 'Бетон графит', category: 'concrete', price: 1500, textureUrl: TEXTURES.concrete },
+{ id: 'concrete-4', name: 'Бетон темный', category: 'concrete', price: 1400, textureUrl: TEXTURES.concrete },
+
 
   // DECORATIVE / TEXTURED
-  { id: 'deco-1', name: 'Шагрень белая', category: 'decorative', price: 1600 },
-  { id: 'deco-2', name: 'Шагрень черная', category: 'decorative', price: 1700 },
-  { id: 'deco-3', name: 'Эшвайт', category: 'decorative', price: 1500 },
-  { id: 'deco-4', name: 'Ривьера Айс', category: 'decorative', price: 1800 },
-  { id: 'deco-5', name: 'Ривьера грей', category: 'decorative', price: 1800 },
-  { id: 'deco-6', name: 'Санторини', category: 'decorative', price: 1900 },
-  { id: 'deco-7', name: 'Винтаж золотой', category: 'decorative', price: 2000 },
+  { id: 'deco-1', name: 'Шагрень белая', category: 'decorative', price: 1600, textureUrl: TEXTURES.decorative },
+{ id: 'deco-2', name: 'Шагрень черная', category: 'decorative', price: 1700, textureUrl: TEXTURES.decorative },
+{ id: 'deco-3', name: 'Эшвайт', category: 'decorative', price: 1500, textureUrl: TEXTURES.decorative },
+{ id: 'deco-4', name: 'Ривьера Айс', category: 'decorative', price: 1800, textureUrl: TEXTURES.decorative },
+{ id: 'deco-5', name: 'Ривьера грей', category: 'decorative', price: 1800, textureUrl: TEXTURES.decorative },
+{ id: 'deco-6', name: 'Санторини', category: 'decorative', price: 1900, textureUrl: TEXTURES.decorative },
+{ id: 'deco-7', name: 'Винтаж золотой', category: 'decorative', price: 2000, textureUrl: TEXTURES.decorative },
+
 
   // GLASS / LACOBEL SURFACES
-  { id: 'glass-1', name: 'Lacobel белый', category: 'glass', price: 3500 },
-  { id: 'glass-2', name: 'Lacobel ультра белый', category: 'glass', price: 4000 },
-  { id: 'glass-3', name: 'Lacobel черный', category: 'glass', price: 3800 },
+  { id: 'glass-1', name: 'Lacobel белый', category: 'glass', price: 3500, textureUrl: TEXTURES.glass },
+{ id: 'glass-2', name: 'Lacobel ультра белый', category: 'glass', price: 4000, textureUrl: TEXTURES.glass },
+{ id: 'glass-3', name: 'Lacobel черный', category: 'glass', price: 3800, textureUrl: TEXTURES.glass },
+
 ];
 
 // =====================
