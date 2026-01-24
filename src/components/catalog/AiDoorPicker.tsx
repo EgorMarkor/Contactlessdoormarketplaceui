@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { UploadCloud, Sparkles, X, Loader2, CheckCircle2 } from 'lucide-react';
 import '@google/model-viewer';
-import { doorModels } from '../../data/door-configurator-data';
+import { doorModels, getColorById, isColorAvailable } from '../../data/door-configurator-data';
 
 interface AiDoorPickerProps {
   onClose: () => void;
@@ -19,50 +19,36 @@ const getModelUrl = (modelId: string) => `/assets/models/door-${modelId}.glb`;
 
 const getTextureUrl = (name: string) => {
   const lower = name.toLowerCase();
-  if (lower.includes('бел') || lower.includes('снеж')) {
+  if (lower.includes('бел') || lower.includes('снеж') || lower.includes('айс') || lower.includes('ультра')) {
     return '/assets/textures/ai/ai-solid-blanco.jpg';
   }
-  if (lower.includes('черн') || lower.includes('графит') || lower.includes('дымчат')) {
+  if (lower.includes('черн') || lower.includes('графит') || lower.includes('дымчат') || lower.includes('темн')) {
     return '/assets/textures/ai/ai-graphite.jpg';
   }
   return '/assets/textures/ai/ai-sand.jpg';
 };
 
-const AI_COLOR_PRESETS = [
-  { id: 'northern-oak', name: 'Северный дуб', swatch: '#C9B59A' },
-  { id: 'milky-oak', name: 'Молочный дуб', swatch: '#E6D7C3' },
-  { id: 'dark-oak', name: 'Темный дуб', swatch: '#6B4A32' },
-  { id: 'smoky-oak', name: 'Дымчатый дуб', swatch: '#8A7766' },
-  { id: 'misty-oak', name: 'Туманный дуб', swatch: '#B9ADA0' },
-  { id: 'classic-oak', name: 'Классик дуб', swatch: '#B2875A' },
-  { id: 'alpine-oak', name: 'Альпийский дуб', swatch: '#D7C3A7' },
-  { id: 'riviera-ice', name: 'Ривьера ледяная', swatch: '#DCE6EB' },
-  { id: 'cape-ash', name: 'Мыс пепельный', swatch: '#9B8F83' },
-  { id: 'sandy-shore', name: 'Берег песчаный', swatch: '#D2B48C' },
-  { id: 'golden-valley', name: 'Долина золотая', swatch: '#C9A25B' },
-  { id: 'karelian-forest', name: 'Лес карельский', swatch: '#7A5A3A' },
-  { id: 'amber-bay', name: 'Бухта янтарная', swatch: '#C68642' },
-  { id: 'savanna-lux', name: 'Саванна люкс', swatch: '#C7A97D' },
-  { id: 'desert-lux', name: 'Пустыня люкс', swatch: '#C19A6B' },
-  { id: 'terracotta-lux', name: 'Терракота люкс', swatch: '#B85C38' },
-  { id: 'dunes-lux', name: 'Дюны люкс', swatch: '#D8B98A' },
-  { id: 'canyon-lux', name: 'Каньон люкс', swatch: '#8C4E2E' },
-  { id: 'white-cotton', name: 'Хлопок белый', swatch: '#F5F2ED' },
-  { id: 'light-eucalyptus', name: 'Эвкалипт светлый', swatch: '#C7D3C4' },
-  { id: 'graphite-juniper', name: 'Можжевельник графитовый', swatch: '#4E5451' },
-  { id: 'creamy-linen', name: 'Лен сливочный', swatch: '#F1E4CF' },
-  { id: 'pink-almond', name: 'Миндаль розовый', swatch: '#E5C7BE' },
-  { id: 'warm-laurel', name: 'Лавр теплый', swatch: '#A39B6A' },
-  { id: 'warm-concrete', name: 'Теплый бетон', swatch: '#B9B1A6' },
-  { id: 'snow-concrete', name: 'Снежный бетон', swatch: '#E8E8E6' },
-  { id: 'graphite-concrete', name: 'Графит бетон', swatch: '#5B5C5E' },
-  { id: 'absolute-concrete', name: 'Абсолют бетон', swatch: '#3F4042' },
-  { id: 'white-sand', name: 'Песок белый', swatch: '#E9DFCF' },
-  { id: 'black-sand', name: 'Песок черный', swatch: '#2F2F2F' }
-].map(color => ({
-  ...color,
-  textureUrl: getTextureUrl(color.name)
-}));
+const AI_SWATCH_BY_CATEGORY: Record<string, string> = {
+  wood: '#C9B59A',
+  solid: '#E8E8E6',
+  concrete: '#B9B1A6',
+  decorative: '#D7C3A7',
+  glass: '#F5F2ED'
+};
+
+const modelForAi = doorModels.find(model => model.id === DEFAULT_MODEL_ID);
+
+const AI_COLOR_PRESETS = (modelForAi?.availableColors ?? [])
+  .map(colorId => getColorById(colorId))
+  .filter((color): color is NonNullable<typeof color> => Boolean(color))
+  .map(color => ({
+    id: color.id,
+    name: color.name,
+    swatch: AI_SWATCH_BY_CATEGORY[color.category] ?? '#D2B48C',
+    textureUrl: color.textureUrl || getTextureUrl(color.name)
+  }));
+
+const DEFAULT_COLOR_ID = AI_COLOR_PRESETS[0]?.id ?? '';
 
 const fileToDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -74,7 +60,7 @@ const fileToDataUrl = (file: File) =>
 
 export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
   const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
-  const [selectedColorId, setSelectedColorId] = useState(AI_COLOR_PRESETS[0].id);
+  const [selectedColorId, setSelectedColorId] = useState(DEFAULT_COLOR_ID);
   const [modelError, setModelError] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -91,6 +77,13 @@ export function AiDoorPicker({ onClose, onApply }: AiDoorPickerProps) {
   const selectedColor = useMemo(() => {
     return AI_COLOR_PRESETS.find(color => color.id === selectedColorId) ?? AI_COLOR_PRESETS[0];
   }, [selectedColorId]);
+
+  const getSafeColorId = (colorId?: string) => {
+    if (colorId && AI_COLOR_PRESETS.some(color => color.id === colorId) && isColorAvailable(DEFAULT_MODEL_ID, colorId)) {
+      return colorId;
+    }
+    return DEFAULT_COLOR_ID;
+  };
 
   useEffect(() => {
     if (!photoFile) {
@@ -190,7 +183,7 @@ const handleAiPick = async () => {
     const safeFile = await convertToJpeg(photoFile);
     const imageUrl = await uploadToImgbb(safeFile);
 
-    const modelContext = doorModels.map(m => `${m.id} — ${m.name}`).join(', ');
+    const modelContext = `${DEFAULT_MODEL_ID} — ${modelForAi?.name ?? DEFAULT_MODEL_ID.toUpperCase()}`;
     const colorContext = AI_COLOR_PRESETS.map(c => `${c.id} — ${c.name}`).join(', ');
 
     // 2️⃣ chat/completions
@@ -220,7 +213,7 @@ const handleAiPick = async () => {
                   `Проанализируй фото дверного проёма. ` +
                   `Разрешены модели: ${modelContext}. ` +
                   `Разрешены цвета: ${colorContext}. ` +
-                  'Ответь JSON вида {"modelId":"l1","colorId":"northern-oak","explanation":"..."}'
+                  `Ответь JSON вида {"modelId":"${DEFAULT_MODEL_ID}","colorId":"${DEFAULT_COLOR_ID}","explanation":"..."}`
               },
               {
                 type: 'image_url',
@@ -240,10 +233,17 @@ const handleAiPick = async () => {
     const data = await response.json();
     const parsed = JSON.parse(data.choices[0].message.content);
 
-    setAiRecommendation(parsed);
-    setSelectedModelId(parsed.modelId);
-    setSelectedColorId(parsed.colorId);
-    onApply({ modelId: parsed.modelId, colorId: parsed.colorId });
+    const recommendedModelId = DEFAULT_MODEL_ID;
+    const recommendedColorId = getSafeColorId(parsed.colorId);
+
+    setAiRecommendation({
+      ...parsed,
+      modelId: recommendedModelId,
+      colorId: recommendedColorId
+    });
+    setSelectedModelId(recommendedModelId);
+    setSelectedColorId(recommendedColorId);
+    onApply({ modelId: recommendedModelId, colorId: recommendedColorId });
   } catch (e) {
     setAiError(e instanceof Error ? e.message : 'Ошибка AI-подбора');
   } finally {

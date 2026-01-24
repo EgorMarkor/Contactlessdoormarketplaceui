@@ -9,7 +9,7 @@ import { AiDoorPicker } from './catalog/AiDoorPicker';
 
 interface CatalogNewProps {
   onNavigate: (page: string) => void;
-  onConfigureModel: (modelId: string) => void;
+  onConfigureModel: (selection: { modelId: string; colorId: string }) => void;
 }
 
 interface Filters {
@@ -358,7 +358,7 @@ export function CatalogNew({ onNavigate, onConfigureModel }: CatalogNewProps) {
           onClose={() => setShowAiPicker(false)}
           onApply={(selection) => {
             setAiSelection(selection);
-            onConfigureModel(selection.modelId);
+            onConfigureModel(selection);
           }}
         />
       )}
