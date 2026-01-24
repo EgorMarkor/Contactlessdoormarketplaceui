@@ -31,25 +31,45 @@ export function ConfiguratorPreview({
   // ✅ путь к модели
   const modelViewerSrc = '/assets/models/door-l1.glb';
 
-  // ✅ НАЛОЖЕНИЕ ТЕКСТУРЫ
+  // ✅ НАЛОЖЕНИЕ ТЕКСТУРЫ/ЦВЕТА ПО АНАЛОГИИ С THREE.JS
   useEffect(() => {
     const viewer = viewerRef.current;
-    if (!viewer || !modelLoaded || !textureUrl) return;
+    if (!viewer || !modelLoaded) return;
+
+    let cancelled = false;
 
     const applyTexture = async () => {
       const model = viewer.model;
-      if (!model) return;
+      const materials = model?.materials ?? [];
+      if (materials.length === 0) return;
 
-      const material = model.materials?.[0];
-      if (!material) return;
+      // Поведение как в рабочем примере: либо накладываем текстуру, либо очищаем её
+      if (!textureUrl) {
+        materials.forEach((material: any) => {
+          const pbr = material?.pbrMetallicRoughness;
+          if (!pbr?.baseColorTexture) return;
+          pbr.baseColorTexture.setTexture(null);
+          pbr.setBaseColorFactor([1, 1, 1, 1]);
+        });
+        return;
+      }
 
       const texture = await viewer.createTexture(textureUrl);
+      if (cancelled) return;
 
-      material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
-      material.pbrMetallicRoughness.setBaseColorFactor([1, 1, 1, 1]);
+      materials.forEach((material: any) => {
+        const pbr = material?.pbrMetallicRoughness;
+        if (!pbr?.baseColorTexture) return;
+        pbr.baseColorTexture.setTexture(texture);
+        pbr.setBaseColorFactor([1, 1, 1, 1]);
+      });
     };
 
     applyTexture();
+
+    return () => {
+      cancelled = true;
+    };
   }, [textureUrl, modelLoaded]);
 
   return (
