@@ -64,7 +64,7 @@ export function ConfiguratorPreview({
   return (
     <div className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-border">
       {/* 3D Door Viewer */}
-      <div className={`min-h-[420px] sm:min-h-[520px] lg:min-h-[620px] bg-gradient-to-br ${viewerGradient} relative overflow-hidden`}>
+      <div className={`min-h-[520px] sm:min-h-[640px] lg:min-h-[740px] bg-gradient-to-br ${viewerGradient} relative overflow-hidden`}>
         <div className="absolute inset-0 flex flex-col p-6 sm:p-8">
           <div className="w-full flex items-center justify-between text-xs text-foreground/70 mb-4">
             <span className="px-2 py-1 rounded-full bg-black/20">3D просмотр</span>
