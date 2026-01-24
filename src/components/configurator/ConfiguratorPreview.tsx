@@ -26,6 +26,8 @@ export function ConfiguratorPreview({
     ? getColorById(selectedColorId)
     : null;
 
+  console.log(selectedColor);
+
   const textureUrl = selectedColor?.textureUrl ?? null;
 
   // ✅ путь к модели
@@ -33,44 +35,89 @@ export function ConfiguratorPreview({
 
   // ✅ НАЛОЖЕНИЕ ТЕКСТУРЫ/ЦВЕТА ПО АНАЛОГИИ С THREE.JS
   useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer || !modelLoaded) return;
+  console.log('🟡 [INIT] useEffect mount');
 
-    let cancelled = false;
+  const viewer = viewerRef.current;
+  console.log('🟡 [INIT] viewerRef.current =', viewer);
 
-    const applyTexture = async () => {
-      const model = viewer.model;
-      const materials = model?.materials ?? [];
-      if (materials.length === 0) return;
+  if (!viewer) {
+    console.log('🔴 [INIT] viewerRef.current NULL');
+    return;
+  }
 
-      // Поведение как в рабочем примере: либо накладываем текстуру, либо очищаем её
-      if (!textureUrl) {
-        materials.forEach((material: any) => {
-          const pbr = material?.pbrMetallicRoughness;
-          if (!pbr?.baseColorTexture) return;
-          pbr.baseColorTexture.setTexture(null);
-          pbr.setBaseColorFactor([1, 1, 1, 1]);
-        });
+  const onModelLoad = () => {
+    console.log('🔥🔥🔥 [EVENT] model-viewer LOAD FIRED');
+    console.log('🧠 viewer.model =', viewer.model);
+    setModelLoaded(true);
+  };
+
+  viewer.addEventListener('load', onModelLoad);
+
+  return () => {
+    console.log('🟡 [CLEANUP] remove load listener');
+    viewer.removeEventListener('load', onModelLoad);
+  };
+}, []);
+
+useEffect(() => {
+  console.log('🟣 [TEXTURE EFFECT] fired');
+  console.log('🟣 modelLoaded =', modelLoaded);
+  console.log('🟣 textureUrl =', textureUrl);
+
+  const viewer = viewerRef.current;
+  if (!viewer) {
+    console.log('🔴 viewer NULL');
+    return;
+  }
+
+  if (!modelLoaded) {
+    console.log('🔴 model not loaded yet');
+    return;
+  }
+
+  if (!viewer.model) {
+    console.log('🔴 viewer.model NULL');
+    return;
+  }
+
+  const materials = viewer.model.materials;
+  console.log('🟢 materials =', materials);
+
+  if (!materials || materials.length === 0) {
+    console.log('🔴 NO MATERIALS');
+    return;
+  }
+
+  (async () => {
+    if (!textureUrl) {
+      console.log('🟡 no textureUrl — skip');
+      return;
+    }
+
+    console.log('🟢 creating texture', textureUrl);
+    const texture = await viewer.createTexture(textureUrl);
+    console.log('🟢 texture created', texture);
+
+    materials.forEach((material: any, i: number) => {
+      const pbr = material.pbrMetallicRoughness;
+      console.log(`🎨 material ${i} pbr`, pbr);
+
+      if (!pbr?.baseColorTexture) {
+        console.log(
+          `❌ material ${i} has NO baseColorTexture`
+        );
         return;
       }
 
-      const texture = await viewer.createTexture(textureUrl);
-      if (cancelled) return;
+      console.log(`✅ applying texture to material ${i}`);
+      pbr.baseColorTexture.setTexture(texture);
+      pbr.setBaseColorFactor([1, 1, 1, 1]);
+    });
+  })();
+}, [textureUrl, modelLoaded]);
 
-      materials.forEach((material: any) => {
-        const pbr = material?.pbrMetallicRoughness;
-        if (!pbr?.baseColorTexture) return;
-        pbr.baseColorTexture.setTexture(texture);
-        pbr.setBaseColorFactor([1, 1, 1, 1]);
-      });
-    };
 
-    applyTexture();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [textureUrl, modelLoaded]);
 
   return (
     <div className="relative h-[70vh] rounded-3xl bg-muted/30 overflow-hidden">
@@ -83,7 +130,6 @@ export function ConfiguratorPreview({
           exposure="0.9"
           shadow-intensity="0.6"
           style={{ width: '320px', height: '480px' }}
-          onLoad={() => setModelLoaded(true)}
         />
       </div>
 
