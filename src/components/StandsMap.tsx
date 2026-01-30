@@ -13,6 +13,8 @@ interface Stand {
   address: string;
   phone: string;
   hours: string;
+  latitude: number;
+  longitude: number;
   availableColors: string[];
   availableEdges: string[];
   availableHandles: string[];
@@ -29,6 +31,8 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
       address: 'Ходынский бульвар, 4',
       phone: '+7 (495) 123-45-67',
       hours: 'Пн-Вс: 10:00 - 22:00',
+      latitude: 55.7909,
+      longitude: 37.5312,
       availableColors: ['Дуб натуральный', 'Дуб беленый', 'Орех', 'Венге', 'Белый', 'Серый'],
       availableEdges: ['Стандартная', 'Алюминий', 'ПВХ цветная'],
       availableHandles: ['Хром матовый', 'Хром глянцевый', 'Черный мат', 'Золото'],
@@ -40,6 +44,8 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
       address: 'Котляково, 14-й км МКАД',
       phone: '+7 (495) 234-56-78',
       hours: 'Пн-Вс: 10:00 - 22:00',
+      latitude: 55.6507,
+      longitude: 37.8466,
       availableColors: ['Дуб натуральный', 'Орех', 'Венге', 'Белый', 'Графит'],
       availableEdges: ['Стандартная', 'Алюминий', 'Деревянная'],
       availableHandles: ['Хром матовый', 'Черный мат', 'Медь'],
@@ -51,6 +57,8 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
       address: 'Лиговский проспект, 30А',
       phone: '+7 (812) 345-67-89',
       hours: 'Пн-Вс: 10:00 - 22:00',
+      latitude: 59.9269,
+      longitude: 30.3596,
       availableColors: ['Дуб натуральный', 'Дуб беленый', 'Орех', 'Белый', 'Серый', 'Черный'],
       availableEdges: ['Стандартная', 'Алюминий', 'ПВХ цветная', 'Деревянная'],
       availableHandles: ['Хром матовый', 'Хром глянцевый', 'Черный мат', 'Золото', 'Медь'],
@@ -62,6 +70,8 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
       address: 'Полюстровский проспект, 84Б',
       phone: '+7 (812) 456-78-90',
       hours: 'Пн-Вс: 10:00 - 22:00',
+      latitude: 60.0582,
+      longitude: 30.3277,
       availableColors: ['Дуб натуральный', 'Орех', 'Венге', 'Белый'],
       availableEdges: ['Стандартная', 'Алюминий'],
       availableHandles: ['Хром матовый', 'Черный мат'],
@@ -73,6 +83,8 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
       address: 'Мамадышский тракт, 12',
       phone: '+7 (843) 567-89-01',
       hours: 'Пн-Вс: 10:00 - 22:00',
+      latitude: 55.8251,
+      longitude: 49.1056,
       availableColors: ['Дуб натуральный', 'Орех', 'Белый', 'Серый'],
       availableEdges: ['Стандартная', 'Алюминий', 'ПВХ цветная'],
       availableHandles: ['Хром матовый', 'Хром глянцевый', 'Черный мат'],
@@ -84,14 +96,32 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
       address: 'Металлургов, 87',
       phone: '+7 (343) 678-90-12',
       hours: 'Пн-Вс: 10:00 - 22:00',
+      latitude: 56.8257,
+      longitude: 60.5956,
       availableColors: ['Дуб натуральный', 'Дуб беленый', 'Орех', 'Белый', 'Серый'],
       availableEdges: ['Стандартная', 'Алюминий'],
       availableHandles: ['Хром матовый', 'Черный мат', 'Золото'],
     },
   ];
 
+  const cityCenters: Record<string, { latitude: number; longitude: number; zoom: number }> = {
+    Москва: { latitude: 55.7558, longitude: 37.6173, zoom: 10 },
+    'Санкт-Петербург': { latitude: 59.9311, longitude: 30.3609, zoom: 10 },
+    Казань: { latitude: 55.7961, longitude: 49.1064, zoom: 11 },
+    Екатеринбург: { latitude: 56.8389, longitude: 60.6057, zoom: 11 },
+  };
+
   const cities = [...new Set(stands.map(s => s.city))];
   const filteredStands = stands.filter(s => s.city === selectedCity);
+  const mapCenter = cityCenters[selectedCity] ?? {
+    latitude: filteredStands[0]?.latitude ?? 55.7558,
+    longitude: filteredStands[0]?.longitude ?? 37.6173,
+    zoom: 11,
+  };
+  const mapPoints = filteredStands
+    .map(stand => `${stand.longitude},${stand.latitude},pm2rdl`)
+    .join('~');
+  const mapUrl = `https://yandex.ru/map-widget/v1/?ll=${mapCenter.longitude},${mapCenter.latitude}&z=${mapCenter.zoom}&pt=${mapPoints}`;
 
   return (
     <div className="min-h-screen bg-background py-6 sm:py-8 lg:py-12">
@@ -124,48 +154,25 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* Map Placeholder */}
+          {/* Map */}
           <div className="lg:sticky lg:top-24 h-fit order-last lg:order-first">
             <div className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-border">
               <div className="aspect-square sm:aspect-[4/3] lg:aspect-square bg-secondary relative">
-                <img
-                  src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=800&h=800&fit=crop"
-                  alt="Карта"
-                  className="w-full h-full object-cover opacity-50"
+                <iframe
+                  title={`Карта стоек: ${selectedCity}`}
+                  src={mapUrl}
+                  className="w-full h-full"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center px-4">
-                    <MapPin className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-                    <h3 className="text-foreground mb-2 text-sm sm:text-base">Интерактивная карта</h3>
-                    <p className="text-muted-foreground text-xs sm:text-sm max-w-xs">
+                <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-3 py-2 rounded-xl border border-border shadow-sm">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground">
+                    <MapPin className="w-4 h-4 text-accent" />
+                    <span>
                       {filteredStands.length} {filteredStands.length === 1 ? 'стойка' : filteredStands.length < 5 ? 'стойки' : 'стоек'} в городе {selectedCity}
-                    </p>
+                    </span>
                   </div>
                 </div>
-                
-                {/* Map pins */}
-                {filteredStands.map((stand, i) => (
-                  <motion.div
-                    key={stand.id}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="absolute hidden sm:block"
-                    style={{
-                      left: `${20 + i * 25}%`,
-                      top: `${30 + i * 15}%`,
-                    }}
-                  >
-                    <div className="relative">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                        <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
-                      </div>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-card px-2 sm:px-3 py-1 rounded-lg shadow-lg whitespace-nowrap text-xs sm:text-sm border border-border hidden lg:block">
-                        {stand.location}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
               </div>
               
               <div className="p-4 sm:p-6 bg-accent/5 border-t border-accent/20">
@@ -264,10 +271,15 @@ export function StandsMap({ onNavigate }: StandsMapProps) {
                     </div>
                   </div>
 
-                  <button className="w-full mt-4 sm:mt-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-accent text-accent-foreground rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-2 text-sm sm:text-base shadow-md">
+                  <a
+                    href={`https://yandex.ru/maps/?text=${encodeURIComponent(`${stand.city}, ${stand.address}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full mt-4 sm:mt-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-accent text-accent-foreground rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-2 text-sm sm:text-base shadow-md"
+                  >
                     <Navigation className="w-4 h-4" />
                     <span>Построить маршрут</span>
-                  </button>
+                  </a>
                 </div>
               </motion.div>
             ))}
