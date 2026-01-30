@@ -15,7 +15,6 @@ export function Header({ currentPage, onNavigate, cartItemsCount }: HeaderProps)
     { id: 'home', label: 'Главная' },
     { id: 'catalog', label: 'Каталог дверей' },
     { id: 'configurator', label: 'Конфигуратор' },
-    { id: 'management', label: 'Управление контентом' },
     { id: 'stands', label: 'Стойки с образцами' },
   ];
 

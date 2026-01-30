@@ -4,14 +4,13 @@ import { CatalogNew } from './components/CatalogNew';
 import { NewConfigurator } from './components/NewConfigurator';
 import { ProductPage } from './components/ProductPage';
 import { StandsMap } from './components/StandsMap';
-import { SeriesManager } from './components/SeriesManager';
 import { Checkout } from './components/Checkout';
 import { Cart } from './components/Cart';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { AdminContentProvider } from './components/admin/AdminContentProvider';
 
-type Page = 'home' | 'catalog' | 'configurator' | 'product' | 'stands' | 'checkout' | 'cart' | 'management';
+type Page = 'home' | 'catalog' | 'configurator' | 'product' | 'stands' | 'checkout' | 'cart';
 
 export interface DoorModel {
   id: string;
@@ -143,7 +142,6 @@ export default function App() {
             <ProductPage door={selectedDoor} onNavigate={navigateTo} />
           )}
           {currentPage === 'stands' && <StandsMap onNavigate={navigateTo} />}
-          {currentPage === 'management' && <SeriesManager />}
           {currentPage === 'cart' && (
             <Cart 
               items={cartItems}
