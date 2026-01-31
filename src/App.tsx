@@ -52,7 +52,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedDoor, setSelectedDoor] = useState<DoorModel | undefined>();
   const [configuratorState, setConfiguratorState] = useState<ConfiguratorState>({
-    color: 'Дуб натуральный',
+    color: 'Северный дуб',
     edge: 'Стандартная',
     handle: 'Хром матовый',
     glass: 'Без стекла',
